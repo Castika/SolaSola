@@ -1,0 +1,95 @@
+# This workflow automatically validates code, builds, and scans the Docker image
+# whenever a pull request is opened against the 'main' branch.
+# Use this with branch protection rules to prevent merging faulty code.
+
+name: Validate Pull Request
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read          # To check out the repository's code.
+  security-events: write  # To upload the SARIF results from Docker Scout to the GitHub Security tab.
+  pull-requests: write    # To post status checks back to the pull request.
+
+jobs:
+  validate:
+    name: Validate, Build, and Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- FIX: Free up disk space on the runner ---
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+
+      - name: Set up Python and Poetry
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-root
+
+      - name: Lint code with flake8
+        run: poetry run flake8 solasola/
+
+      - name: Run tests with pytest
+        run: poetry run pytest
+
+      - name: Check for forbidden files tracked by Git
+        run: |
+          # This script explicitly checks for files that should never be committed, based on .gitignore rules.
+          # Hardcoding these patterns makes the workflow's security checks self-contained and explicit.
+          FORBIDDEN_PATTERNS=(
+            "__pycache__/"
+            "\.py[cod]$"
+            "\\$py\.class$"
+            "\.venv/"
+            "env/"
+            "venv/"
+            "build/"
+            "dist/"
+            "\.egg-info/"
+            "\.vscode/"
+            "\.pytest_cache/"
+            "\.coverage$"
+            "\.DS_Store$"
+            "Thumbs\.db$"
+            "\.log$"
+            "requirements\.txt$"
+            "dog\.sh$"
+            "dogwin\.sh$"
+            "publish\.sh$"
+            "solasola-test-image\.tar$"
+            "Docs/"
+            "Music/"
+            "AI_Models/"
+          )
+          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
+          if [ -n "$FORBIDDEN_FILES" ]; then
+            echo "Error: The following files are tracked by Git but should be ignored:"
+            echo "$FORBIDDEN_FILES"
+            exit 1
+          fi
+          echo "✅ No forbidden files are being tracked by Git."
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image locally for scanning
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag castika/solasola:ci-scan \
+            --load .
+
+      - name: Scan image with Docker Scout
+        run: docker scout cves castika/solasola:ci-scan --exit-code --only-severity critical,high
