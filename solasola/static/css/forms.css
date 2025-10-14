@@ -1,0 +1,810 @@
+/* --- Compatibility Alert --- */
+.alert-warning {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--warning-border-subtle);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    background-color: var(--warning-bg-subtle);
+    color: var(--warning-color);
+}
+
+.alert-warning .alert-icon {
+    font-size: 24px;
+    margin-top: 2px; /* Align icon better with text */
+    flex-shrink: 0;
+}
+
+.alert-warning .alert-content {
+    flex-grow: 1;
+}
+
+.alert-warning .alert-content p {
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.alert-warning .alert-content strong {
+    font-weight: 600;
+}
+
+.alert-warning .alert-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+/* --- Form Styles --- */
+#upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Hide the default file input buttons, as we use custom labels */
+#upload-form input[type="file"] {
+    display: none;
+}
+
+.file-upload-area {
+    position: relative; /* For the processing overlay */
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.file-upload-area:hover,
+.file-upload-area.drag-over {
+    background-color: var(--primary-bg-subtle);
+    border-color: var(--primary-color);
+}
+
+.file-upload-area.has-files {
+    border-style: solid;
+    padding-bottom: 1.5rem; /* Reduce bottom padding when files are listed */
+    border-color: var(--success-color);
+    background-color: var(--success-bg-subtle);
+}
+
+.file-upload-area .material-symbols-outlined {
+    font-size: 48px;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.file-upload-area span {
+    display: block;
+    font-size: 1rem;
+}
+
+.file-upload-area small {
+    color: var(--subtle-text-color);
+}
+
+.processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--overlay-bg-color);
+    backdrop-filter: blur(2px);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px; /* Match parent */
+    z-index: 10;
+}
+
+/* --- NEW: More subtle hover for dark mode --- */
+html[data-theme="dark"] .file-upload-area:hover,
+html[data-theme="dark"] .file-upload-area.drag-over {
+    background-color: var(--subtle-bg-color); /* Use gray-700 instead of blue */
+}
+
+/* --- NEW: Deeper green for dark mode success state --- */
+html[data-theme="dark"] .file-upload-area.has-files {
+    border-color: var(--success-border-subtle); /* A darker, less neon green */
+    background-color: #071f19;
+}
+
+.file-upload-area.processing .processing-overlay {
+    display: flex; /* Show when processing */
+}
+
+.file-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 1.5rem; /* Space from the text above */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the file pills */
+    gap: 0.75rem;
+    display: none; /* Hidden by default, shown by JS */
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--subtle-bg-color);
+    color: var(--subtle-text-color);
+    padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    /* --- NEW: Prevent the pill itself from growing too wide --- */
+    max-width: 100%;
+}
+
+html[data-theme="dark"] .file-list-item {
+    background-color: #111827; /* Use a near-black color for dark mode */
+    border: 1px solid var(--border-color);
+}
+
+.file-name-text {
+    /* --- NEW: Force single-line display and add ellipsis for overflow --- */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Crucial for allowing flex items to shrink and truncate */
+}
+
+/* Ensure the remove button inside the list is clickable */
+.file-list * { pointer-events: auto; }
+
+.file-remove-btn {
+    background: none;
+    border: none;
+    color: var(--subtle-text-color);
+    cursor: pointer;
+    margin-left: 0.5rem;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+    font-weight: 600;
+}
+
+.file-remove-btn:hover {
+    color: var(--text-color);
+}
+
+.form-section {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem 0;
+}
+
+.form-section legend {
+    font-weight: 600;
+    padding: 0 0.5rem;
+    margin-left: 1rem;
+}
+
+.form-section.is-disabled {
+    opacity: 0.5;
+    background-color: var(--subtle-bg-color);
+    pointer-events: none;
+}
+
+.radio-option .slider-section legend {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.options-grid {
+    display: grid;
+    /* gap: 1rem; */ /* Removed to make options look like a single group */
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    /* border-radius: 6px; */
+    /* border: 1px solid var(--border-color); */
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.options-grid > .radio-option:first-child {
+    padding-top: 0;
+}
+
+.radio-option:not(:last-child) {
+    /* Replaced with a pseudo-element for a centered, shorter border */
+    position: relative;
+}
+
+.radio-option:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%; /* (100% - 80%) / 2 */
+    width: 80%;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.radio-option.is-split-card {
+    display: block;
+}
+
+.radio-option-top-row {
+    display: flex;
+    align-items: center;
+}
+
+.radio-option-bottom-row {
+    margin-top: 1rem;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 0.75rem;
+    accent-color: var(--primary-color);
+}
+
+.radio-option-content {
+    flex-grow: 1;
+}
+
+.content-with-side-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+.content-with-side-control .main-content {
+    flex-grow: 1;
+}
+
+.content-with-side-control + .description {
+    /* Reduce the top margin for descriptions that follow the title/toggle line */
+    margin-top: 0.25rem;
+}
+
+.radio-option .title {
+    font-weight: 500;
+}
+
+.radio-option .description {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+}
+
+.slider-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0;
+    margin-bottom: -1rem; /* Pull the section up to reduce space below */
+}
+
+.form-section > .slider-section {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+.slider-wrapper {
+    width: 100%;
+    padding: 0 5%;
+}
+
+.slider-container {
+    position: relative;
+}
+
+.slider-labels {
+    position: relative;
+    height: 1.2em; /* Provide space for the labels */
+    font-size: 0.8rem;
+    color: var(--subtle-text-color);
+}
+
+.slider-labels .quality-label {
+    position: absolute;
+    top: 0;
+    font-weight: 400;
+    transition: font-weight 0.2s;
+    transform: translateX(-50%); /* Center the label horizontally on its 'left' value */
+    text-align: center;
+    white-space: nowrap; /* Prevent labels from wrapping */
+}
+
+/* --- Demucs Slider (3 labels) --- */
+#demucs-label-0 { left: 0%; transform: translateX(0%); }
+#demucs-label-1 { left: 50%; }
+#demucs-label-2 { left: 100%; transform: translateX(-100%); }
+
+/* --- Whisper Slider (3 labels) --- */
+#whisper-label-0 { left: 0%; transform: translateX(0%); } /* Align left edge */
+#whisper-label-1 { left: 50%; }
+#whisper-label-2 { left: 100%; transform: translateX(-100%); } /* Align right edge */
+
+.slider-labels .quality-label.selected {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.slider-tooltip {
+    position: absolute;
+    bottom: -40px; /* Position below the slider */
+    left: 0; /* JS will control this */
+    background-color: var(--subtle-bg-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.slider-description {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    text-align: center;
+    margin-top: 2.25rem; /* Increased to make space for the tooltip */
+    min-height: 2.5em; /* Prevent layout shifts on text change */
+    transition: color 0.2s;
+}
+
+.radio-option .slider-description {
+    margin-top: 2.75rem; /* Increased to prevent tooltip overlap */
+    min-height: 2.5em; /* Restored to prevent layout shifts */
+}
+
+.slider-section:hover .slider-tooltip,
+.quality-slider:focus + .slider-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: -6px;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid var(--border-color);
+}
+
+.quality-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    outline: none;
+    border-radius: 4px;
+    transition: opacity .2s;
+}
+
+.quality-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 3px solid var(--container-background);
+    box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.quality-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 3px solid var(--container-background);
+    box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.options-grid.single-column {
+    grid-template-columns: 1fr;
+    /* Reduced vertical padding to bring content closer to the legend and the bottom border */
+    padding: 0.5rem 28px 0;
+}
+
+.language-select {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: var(--font-family);
+    background-color: var(--input-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+.language-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.options-grid .description {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    margin-top: 0.5rem;
+}
+
+.description .help-link,
+.description .help-link:visited {
+    color: var(--primary-color);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.description .help-link:hover {
+    text-decoration: underline;
+}
+
+/* --- Language Help Modal --- */
+.language-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.language-header h4 {
+    margin: 0;
+}
+
+.toggle-language-list,
+.toggle-language-list:visited {
+    /* --- NEW: Style as an icon button --- */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--subtle-text-color);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.toggle-language-list:hover {
+    background-color: var(--subtle-bg-color);
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.toggle-language-list .material-symbols-outlined {
+    font-size: 24px;
+}
+.language-search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-background);
+    color: var(--text-color);
+}
+.language-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.language-list-dynamic {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.no-results {
+    text-align: center;
+    color: var(--subtle-text-color);
+    margin-top: 1rem;
+}
+
+.log-message .log-detail {
+    display: inline; /* Keep it on the same line */
+    color: var(--subtle-text-color);
+    font-size: 0.9em; /* Slightly smaller than the main log message */
+}
+
+/* --- Main Button --- */
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    width: 100%;
+}
+
+.primary-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.primary-button:disabled {
+    background-color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.primary-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.primary-button .material-symbols-outlined {
+    font-size: 1.3em;
+    line-height: 0; /* Helps with vertical alignment in flex */
+}
+
+.verifying-indicator {
+    background-color: var(--primary-color);
+    opacity: 0.7; /* Indicate a non-interactive state */
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: wait; /* Show a waiting cursor */
+    display: flex; /* Use flex to align items */
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    width: 100%;
+}
+
+.privacy-card {
+    padding: 1rem 1.5rem;
+    margin-top: 2rem; /* Space below the form */
+    border: 1px solid var(--success-border-subtle);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background-color: var(--success-bg-subtle);
+    color: var(--success-color-darker);
+}
+
+.privacy-card p {
+    font-size: 0.9rem;
+    color: var(--success-color-dark);
+}
+
+/* --- NEW: Copyright Warning Card --- */
+.copyright-card {
+    padding: 1rem 1.5rem;
+    margin-top: 1.5rem; /* Space below the privacy card */
+    border: 1px solid var(--warning-border-subtle);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background-color: var(--warning-bg-subtle);
+    color: var(--warning-color);
+}
+
+.copyright-card .material-symbols-outlined {
+    font-size: 24px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.copyright-card p {
+    font-size: 0.9rem;
+    /* The color is inherited from the parent .copyright-card */
+}
+
+html[data-theme="dark"] .copyright-card p {
+    color: var(--warning-color); /* Explicitly set for dark mode */
+}
+
+/* --- Specific Section Overrides --- */
+#processing-mode-section {
+    padding-bottom: 6px;
+}
+
+/* --- Custom Toggle Switch (for Lyrics Accuracy) --- */
+.accuracy-toggle-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    left: -4px;
+}
+.toggle-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--subtle-text-color);
+    cursor: pointer;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0; /* Prevent switch from shrinking */
+}
+.toggle-switch input { display: none; } /* Hide default checkbox */
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .slider {
+    background-color: var(--primary-color);
+}
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* --- Inactive Option Styling --- */
+.radio-option.is-inactive .radio-option-bottom-row {
+    opacity: 0.6; /* Make it slightly less faded to encourage interaction */
+}
+
+.radio-option.is-inactive .quality-slider::-webkit-slider-thumb {
+    background: #9CA3AF; /* Same as disabled button */
+}
+
+.radio-option.is-inactive .quality-slider::-moz-range-thumb {
+    background: #9CA3AF; /* Same as disabled button */
+}
+
+/* --- Responsive Form Adjustments --- */
+
+/* For the SRT Generation toggle layout on smaller screens */
+@media (max-width: 470px) {
+    .content-with-side-control {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .accuracy-toggle-wrapper {
+        /* Reset the negative positioning that was used for horizontal alignment
+           to ensure correct left-alignment in the vertical layout. */
+        left: 0;
+    }
+}
+
+/* For the Demucs slider labels on very small screens */
+.quality-label .short-text {
+    display: none;
+}
+
+@media (max-width: 400px) {
+    .quality-label .full-text {
+        display: none;
+    }
+    .quality-label .short-text {
+        display: inline;
+    }
+
+    /* --- FIX: Ensure profile item background is transparent on mobile in dark mode --- */
+    html[data-theme="dark"] .profile-item {
+        background-color: transparent;
+        border: none;
+    }
+}
+
+/* --- Floating Action Buttons --- */
+.floating-action-buttons {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column-reverse; 
+    gap: 1rem;
+    z-index: 1000;
+    align-items: center;
+}
+
+/* This overrides any individual positioning the buttons might have,
+   allowing the flex container to manage their layout. */
+.floating-action-buttons > .view-log-button {
+    position: static;
+}
+
+.fab-position-wrapper {
+    position: relative;
+    width: 50px; /* Match button width from components.css */
+    height: 50px; /* Match button height from components.css */
+}
+
+/* --- NEW: Warning for multiple file selection --- */
+.file-list-warning {
+    padding: 1rem;
+    /* Use a negative margin to pull it closer to the box above it. */
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    border: none; /* Remove border */
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    color: #1F2937; /* Black text for light mode */
+}
+
+html[data-theme="dark"] .file-list-warning {
+    color: #FFFFFF; /* White text for dark mode */
+}
+
+.file-list-warning .material-symbols-outlined {
+    font-size: 24px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    color: #ef4444; /* Bright red icon */
+}
+
+.file-list-warning p {
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.file-list-warning strong {
+    font-weight: 600;
+    /* Color will be inherited from the parent .file-list-warning */
+}

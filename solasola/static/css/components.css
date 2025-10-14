@@ -1,0 +1,619 @@
+/* --- Loader --- */
+.loader-small {
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    animation: spin 1s linear infinite;
+}
+
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loader-content {
+    text-align: center;
+}
+
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.processing-overlay span {
+    margin-top: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-content progress {
+    width: 80%;
+    height: 12px;
+    margin-top: 1rem;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.loader-content progress::-webkit-progress-bar {
+    background-color: #E5E7EB;
+}
+
+.loader-content progress::-webkit-progress-value {
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.loader-content progress::-moz-progress-bar {
+    background-color: var(--primary-color);
+}
+
+#cancel-button {
+    margin-top: 1.5rem;
+    background-color: #EF4444; /* Red-500 */
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#cancel-button:hover {
+    background-color: #DC2626; /* Red-600 */
+}
+
+#cancel-button .material-symbols-outlined {
+    font-size: 1.3em;
+    line-height: 0;
+}
+
+/* --- View Containers --- */
+#loading-view {
+    display: none; /* Controlled by JS */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem;
+    min-height: 60vh; /* Ensure it has enough height to center content vertically */
+}
+
+/* --- Notification Toasts & Log --- */
+#notification-container {
+    position: fixed;
+    /* The 'bottom' property is now dynamically calculated by JavaScript
+       to position it correctly above the floating action buttons. */
+    bottom: 20vh; /* A sensible default fallback */
+    right: 1rem;
+    z-index: 4000; /* Higher than modal overlay (3000) */
+    width: 380px; /* Set a fixed width for toasts. */
+    max-width: 90vw; /* Prevent overflow on small screens. */
+    transition: bottom 0.3s ease-in-out;
+}
+
+/* When a modal is open, move the toasts up to avoid obscuring the modal footer. */
+body.modal-open #notification-container {
+    bottom: 30vh;
+    /*
+     * Re-asserting the z-index here helps prevent a browser rendering bug where
+     * existing toasts might appear under the modal overlay when it opens.
+     */
+}
+
+.toast {
+    position: absolute;
+    right: 0;
+    width: 100%;
+    background-color: var(--container-background);
+    color: var(--text-color);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    border-left-width: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    /* Fly-in animation */
+    animation: toast-enter 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    /* Cascade-down animation */
+    transition: bottom 1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes toast-enter {
+    from {
+        transform: translateX(110%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-exit {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.toast.toast-exit {
+    animation: toast-exit 0.5s ease-out forwards;
+}
+
+.toast.info { border-left-color: var(--primary-color); }
+.toast.success { border-left-color: var(--success-color); }
+.toast.error { border-left-color: #EF4444; }
+.toast.warning { 
+    border-left-color: #F59E0B; /* amber-500 */
+    background-color: var(--warning-bg-subtle);
+}
+
+.toast .toast-icon {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+}
+
+.view-log-button {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1500;
+    background-color: var(--container-background);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@keyframes pulse-primary {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.7), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+}
+
+#view-log-button.has-new-notifications {
+    background-color: #EF4444; /* Red-500 */
+    border-color: #DC2626; /* Red-600 */
+    animation: pulse-red 2s infinite;
+}
+
+.view-log-button:hover {
+    transform: scale(1.05);
+}
+
+.view-log-button .material-symbols-outlined {
+    font-size: 28px;
+    color: var(--subtle-text-color);
+    transition: color 0.3s;
+}
+
+.material-symbols-outlined.filled-icon {
+    font-variation-settings: 'FILL' 1;
+}
+
+#view-log-button.has-new-notifications .material-symbols-outlined {
+    color: white;
+}
+
+#view-log-button {
+    /* Position it in the middle of the stack */
+    bottom: calc(1rem + 50px + 10px);
+}
+
+#view-results-button {
+    bottom: calc(1rem + 50px + 10px + 50px + 10px); /* Position above the log and dummy buttons */
+    background-color: var(--primary-color);
+    border-color: var(--primary-hover-color);
+    transform: translateY(20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s, visibility 0.3s, background-color 0.2s;
+}
+
+#view-results-button.visible {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    animation: pulse-primary 2s infinite;
+}
+
+#view-results-button .material-symbols-outlined {
+    color: white;
+}
+
+#view-results-button:hover {
+    background-color: var(--primary-hover-color);
+    animation-play-state: paused; /* Pause animation on hover */
+}
+
+    #floating-return-button {
+        /* Position it exactly where the view-results-button is */
+        bottom: calc(1rem + 50px + 10px + 50px + 10px);
+        /* Different color scheme for a secondary action */
+        background-color: #ef4444; /* Red-500 */
+        border-color: #dc2626; /* Red-600 */
+        /* Initial state: hidden */
+        transform: translateY(20px);
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s, visibility 0.3s, background-color 0.2s;
+    }
+
+    #floating-return-button .material-symbols-outlined {
+        color: white;
+    }
+
+    #floating-return-button:hover {
+        background-color: #dc2626; /* Red-600 */
+    }
+
+    #floating-return-button.visible {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+/* --- Notification Log Modal --- */
+.log-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.log-list li {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.5;
+}
+
+/* --- NEW: Responsive Log List for smaller screens --- */
+@media (max-width: 500px) {
+    .log-list li {
+        flex-direction: column;
+        gap: 0.25rem; /* Reduce gap for vertical layout */
+    }
+}
+
+.log-list li:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    flex-shrink: 0;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--subtle-text-color);
+    opacity: 0.7;
+}
+
+.log-message {
+    flex-grow: 1;
+    color: var(--text-color); /* Default color */
+}
+
+/* Color coding for message types */
+.log-list li.success .log-message { color: var(--success-color-darker); }
+html[data-theme="dark"] .log-list li.success .log-message { color: var(--success-color-dark); }
+
+.log-list li.error .log-message { color: var(--error-color); }
+html[data-theme="dark"] .log-list li.error .log-message { color: #F87171; }
+
+.log-list li.warning .log-message { color: var(--warning-color); }
+html[data-theme="dark"] .log-list li.warning .log-message { color: #FBBF24; }
+
+
+/* --- Generic Modal System --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out, visibility 0s 0.2s;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.modal-content {
+    background-color: var(--container-background);
+    width: 90%;
+    max-width: 700px;
+    height: 80vh; /* All modals now use the max height for consistency */
+    min-height: 40vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transform: scale(0.95);
+    transition: transform 0.2s ease-in-out;
+}
+
+.modal-overlay.visible .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    justify-content: space-between;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    /* Truncate long titles with an ellipsis */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Fix for flexbox truncation issue */
+}
+
+.modal-header-btn {
+    background-color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.modal-header-btn:hover {
+    background-color: var(--primary-hover-color);
+}
+.modal-header-btn:active {
+    transform: scale(0.95);
+}
+.modal-header-btn .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--subtle-text-color);
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.modal-close-btn:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    margin: 0; /* Reset default <pre> margin */
+    overflow-y: auto;
+    flex-grow: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--subtle-text-color) var(--subtle-bg-color);
+}
+
+.modal-body p {
+    line-height: 1.6;
+    margin-bottom: 1em;
+}
+
+.modal-body h4 {
+    font-size: 1.1rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.modal-body h4:first-child {
+    margin-top: 0;
+}
+
+.modal-body pre {
+    /* --- FIX: Use the app's default font and allow wrapping --- */
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    gap: 1rem; /* Add space between left and right button groups on narrow screens */
+}
+
+.modal-footer-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.modal-footer-btn {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* Space between icon and text */
+    background-color: var(--container-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.modal-footer-btn .material-symbols-outlined {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.modal-footer-btn.icon-only .label {
+    display: none;
+}
+.modal-footer-btn:hover {
+    background-color: var(--border-color);
+}
+.modal-footer-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+.modal-footer-btn.primary:hover {
+    background-color: var(--primary-hover-color);
+}
+.modal-footer-btn.destructive {
+    background-color: #EF4444; /* red-500 */
+    color: white;
+    border-color: #EF4444;
+}
+.modal-footer-btn.destructive:hover {
+    background-color: #DC2626; /* red-600 */
+    border-color: #DC2626;
+}
+
+.modal-footer-btn.success {
+    background-color: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+.modal-footer-btn.success:hover {
+    background-color: var(--success-color-dark);
+    border-color: var(--success-color-dark);
+}
+
+.modal-footer-btn.warning {
+    background-color: var(--warning-color);
+    color: #ffffff; /* White text for contrast */
+    border-color: var(--warning-color);
+}
+
+.modal-footer-btn.warning:hover {
+    background-color: #B45309; /* amber-700 */
+    border-color: #B45309;
+}
+
+html[data-theme="dark"] .modal-footer-btn.warning:hover {
+    background-color: #D97706; /* amber-600 */
+    border-color: #D97706;
+}
+
+.modal-footer-btn.icon-only {
+    padding: 0.5rem;
+    min-width: 38px; /* Make it squarish */
+}
+
+@media (max-width: 768px) {
+    .modal-footer-btn .label {
+        display: none;
+    }
+    .modal-footer-btn {
+        padding: 0.5rem;
+        min-width: 38px;
+    }
+}
+
+.example-box {
+    background-color: var(--subtle-bg-color);
+    border: none;
+    border-left: 4px solid var(--primary-color);
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0;
+}
+
+.example-box p {
+    margin: 0;
+    padding: 0;
+}
+
+.modal-footer-btn .loader-small {
+    /* Override default loader margin */
+    margin: 0;
+}

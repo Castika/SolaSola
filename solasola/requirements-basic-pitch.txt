@@ -1,0 +1,8 @@
+# Dependencies for the isolated basic-pitch process.
+# This environment requires numpy v1, which conflicts with the main application's
+# dependencies (like whisperx).
+numpy<2.0
+# We install basic-pitch without the [tf] extra and explicitly add the
+# much lighter tflite-runtime, which is sufficient for inference.
+basic-pitch>=0.4.0,<0.5.0
+tflite-runtime

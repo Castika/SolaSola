@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+env/
+venv/
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / Editor Files
+.vscode/
+
+# Test & Coverage Reports
+.pytest_cache/
+.coverage
+
+# Local development scripts
+dog.sh
+dogwin.sh
+publish.sh
+solasola-test-image.tar
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Documentation folder
+Docs/
+
+# Auto-generated files
+requirements.txt
+*.log
+
+# User data directories (should be volumes, not committed)
+Music/
+AI_Models/

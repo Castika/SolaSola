@@ -1,0 +1,65 @@
+<div class="model-manager-container">
+    <div id="model-cache-alert" class="alert-info dismissible" role="alert">
+        <div class="alert-content">
+            <h5 class="alert-title">Please Note</h5>
+            <p>
+                To ensure system integrity, SolaSola automatically manages the AI models folder.
+            </p>
+            <p>AI models are saved in the <strong>AI_Models</strong> folder, which is located inside the <code>SolaSola</code> directory you created in your user's <strong>Music</strong> folder.</p>
+            <p>Please do not modify files inside this folder. Any changes will cause SolaSola to automatically delete and re-download the model.</p>
+        </div>
+        <button type="button" class="alert-close-btn" title="Dismiss">Close</button>
+    </div>
+
+    <div class="model-list-section" id="feature-models-section">
+        <h4 class="model-section-header" style="padding-top: 0;">Song Profile AI Models</h4>
+        <p class="model-section-description">These optional models analyze musical properties (like genre) to build a detailed song profile in your results.<span class="model-section-warning">Deleting these models while an analysis is in progress may cause unexpected errors.</span></p>
+        <ul class="model-list" id="feature-models-list"></ul>
+    </div>
+
+    <hr class="section-divider">
+    <div class="model-list-section" id="separation-models-section">
+        <h4 class="model-section-header">Instrument Separation AI Models</h4>
+        <p class="model-section-description">These models separate a song into its core instruments (vocals, drums, bass, etc.). SolaSola automatically downloads the required model when you run a "Full Analysis".<span class="model-section-warning">Deleting these models while an analysis is in progress may cause unexpected errors.</span></p>
+        <ul class="model-list" id="separation-models-list"></ul>
+    </div>
+
+</div>
+
+<!-- Template for a single model item in the list, used by JavaScript. -->
+<template id="model-list-item-template">
+    <li>
+        <div class="model-list-item-top">
+            <div class="model-name-wrapper">
+                <span class="model-name"></span>
+                <span class="model-size"></span>
+            </div>
+            <div class="model-status">
+                <div class="status-installing" style="display: none;">
+                    <span class="progress-text">Installing...</span>
+                    <button class="cancel-install-btn" title="Cancel Installation">
+                        <span class="material-symbols-outlined">cancel</span>
+                    </button>
+                </div>
+                <div class="status-installed" style="display: none;">
+                    <button class="delete-btn" title="Delete Model">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+                <button class="install-btn" title="Install Model" style="display: none;">
+                    <span class="material-symbols-outlined">download</span>
+                </button>
+            </div>
+        </div>
+        <div class="progress-bar-container" style="display: none;">
+            <div class="progress-bar-track">
+                <div class="progress-bar-download-container">
+                    <div class="progress-bar-download"></div>
+                </div>
+                <div class="progress-bar-verify-container">
+                    <div class="progress-bar-verify"></div>
+                </div>
+            </div>
+        </div>
+    </li>
+</template>

@@ -1,0 +1,888 @@
+/* --- Model Manager Modal Styles --- */
+
+/* --- NEW: Dismissible Info Alert for Cache Policy --- */
+.alert-info.dismissible {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--subtle-bg-color);
+    color: var(--text-color);
+    /* --- NEW: Use flexbox to position the button below the content --- */
+    display: flex;
+    flex-direction: column;
+}
+
+.alert-info.dismissible .alert-content {
+    flex-grow: 1;
+}
+
+.alert-info.dismissible .alert-title {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+}
+
+.alert-info.dismissible .alert-content p {
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.alert-info.dismissible .alert-content .alert-path-container {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.alert-info.dismissible .alert-path {
+    display: inline-block;
+    /* --- NEW: Style as plain, centered text --- */
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    word-break: break-all;
+}
+
+.alert-info.dismissible .alert-close-btn {
+    /* --- NEW: Style as a blue rectangular button --- */
+    align-self: center; /* Align to the center */
+    margin-top: 0.75rem; /* Reduced space above the button */
+    background-color: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+    padding: 0.125rem 0.5rem; /* Reduced padding around the button */
+    border-radius: 6px;
+    font-size: 0.8rem; /* Keep font size as is */
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.alert-info.dismissible .alert-close-btn:hover {
+    background-color: var(--primary-hover-color);
+}
+.custom-model-actions {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+.secondary-button {
+    /* Based on primary-button but with different colors */
+    background-color: var(--subtle-bg-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.secondary-button:hover {
+    background-color: var(--border-color);
+}
+
+.secondary-button:disabled {
+    color: #9CA3AF; /* A common disabled text color */
+    border-color: var(--border-color);
+    background-color: var(--subtle-bg-color);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+/* --- Search Bar --- */
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.search-bar-container .material-symbols-outlined {
+    color: var(--subtle-text-color);
+}
+
+/* Re-use language-search-input from forms.css but remove its specific styles when inside the search bar */
+.search-bar-container .language-search-input {
+    border: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    background-color: transparent;
+}
+
+.search-bar-container .language-search-input:focus {
+    box-shadow: none;
+}
+
+.model-list-section#language-models-section {
+    margin-top: 2.25rem;
+}
+
+.model-section-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--subtle-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 0 -0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.model-section-description {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    padding: 0 0rem 0.6rem;
+    margin: -0.5rem 0 -0.5;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.model-list-section#language-models-section .model-section-description {
+    border-bottom: none;
+    padding-bottom: 0; /* Remove padding that was spacing for the border */
+}
+
+span.model-section-warning {
+    /* This is now an inline span, so it inherits font-size. */
+    color: var(--error-color);
+    font-weight: 500;
+    margin-left: 0.5rem; /* Add a small space before the warning text. */
+}
+
+/* --- NEW: Style for the horizontal divider --- */
+.section-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 1rem 0; /* Add some vertical space around the line */
+}
+
+.model-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.model-list-item {
+    display: flex;
+    /* Change to a column layout to stack the progress bar below */
+    flex-direction: column;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.model-list-item.is-installing {
+    /* To maintain consistent height, we reduce the bottom padding by exactly the
+       height that the progress bar container will introduce. */
+    /* The progress bar container adds 0.15rem of top padding and its content is 6px high.
+       This is adjusted to keep the total item height consistent. */
+    padding-bottom: calc(0.75rem - (0.15rem + 6px));
+}
+
+.model-list-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.model-list-item:last-child {
+    border-bottom: none;
+}
+
+.model-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative; /* For tooltip positioning */
+    /* --- FIX: Allow this wrapper to shrink on narrow screens --- */
+    /* min-width: 0 is crucial for flex items to be able to shrink below their
+       content size and allow text-overflow to work. */
+    min-width: 0;
+}
+
+.model-name {
+    font-weight: 500;
+    /* --- FIX: Allow the name to truncate instead of pushing other elements --- */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.model-size {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--subtle-text-color);
+    background-color: var(--subtle-bg-color);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+    /* Make it less prominent than the name */
+    opacity: 0.8;
+}
+
+.custom-model-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--warning-color);
+    background-color: var(--warning-bg-subtle);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--warning-border-subtle);
+    text-transform: uppercase;
+    cursor: help;
+    margin-left: auto; /* Push it to the right of the name */
+    flex-shrink: 0;
+}
+
+.model-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Allow this section to take up the remaining space */
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+.install-btn,
+.delete-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 6px;
+    justify-content: center;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background-color: var(--container-background);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.cancel-install-btn {
+    /* Reuse styles from other action buttons for consistency */
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 6px;
+    justify-content: center;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background-color: var(--container-background);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    /* Style as a destructive action */
+    color: var(--error-color);
+    /* Prevent the button from shrinking in the flex container */
+    flex-shrink: 0;
+}
+
+.install-btn {
+    color: var(--primary-color);
+}
+
+.install-btn:hover:not(:disabled) {
+    background-color: var(--primary-bg-subtle);
+    border-color: var(--primary-color);
+}
+
+.install-btn:disabled {
+    color: #9CA3AF;
+    border-color: var(--border-color);
+    background-color: var(--subtle-bg-color);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.install-btn .material-symbols-outlined,
+.delete-btn .material-symbols-outlined,
+.cancel-install-btn .material-symbols-outlined {
+    font-size: 1.5rem;
+}
+
+/* --- Status Indicators & Progress --- */
+.status-installing {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1; /* Allow it to take space */
+    justify-content: flex-end; /* Align its content (text, button) to the right */
+}
+
+.progress-bar-container {
+    width: 100%;
+    /* Use padding instead of margin to create the visual gap.
+       This is the space between the text row and the progress bar. */
+    padding-top: 0.15rem;
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background-color: var(--subtle-bg-color);
+    border-radius: 4px;
+    display: flex; /* Use flex to lay out the two bars */
+    overflow: hidden; /* This will clip the children to the track's rounded corners */
+    margin: 0;
+}
+
+.progress-bar-download-container,
+.progress-bar-verify-container {
+    flex-basis: 50%;
+    height: 100%;
+    background-color: transparent; /* Containers are just for layout */
+}
+
+.progress-bar-download,
+.progress-bar-verify {
+    height: 100%;
+    width: 0%; /* Start with 0 width, JS will control this */
+    transition: width 0.2s ease-in-out;
+}
+
+.progress-bar-download {
+    background-color: var(--primary-color);
+}
+
+.progress-bar-verify {
+    background-color: var(--warning-color);
+}
+
+/* Pulsing animation for the download bar */
+.progress-bar-download.pulsing {
+    animation: pulse-blue 2s infinite ease-in-out;
+}
+
+@keyframes pulse-blue {
+    0% { background-color: var(--primary-color); }
+    50% { background-color: var(--primary-hover-color); }
+    100% { background-color: var(--primary-color); }
+}
+
+.progress-bar-fill {
+    /* This class is now deprecated but kept for safety in case it's referenced elsewhere */
+    height: 100%;
+    border-radius: 4px;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    color: var(--subtle-text-color);
+}
+.progress-text {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.progress-text.text-fade-out {
+    opacity: 0;
+}
+
+.status-installed {
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn {
+    color: var(--error-color);
+}
+
+.delete-btn:hover:not(:disabled) {
+    background-color: var(--error-color);
+    color: white;
+    border-color: var(--error-color);
+}
+
+/* --- Styles for the form inside the modal --- */
+#custom-model-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* Adjusted gap */
+}
+
+.repo-id-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#custom-model-repo-id {
+    padding-right: 3rem; /* Make space for the button */
+}
+
+.validate-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--subtle-text-color);
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.validate-btn:hover:not(:disabled) {
+    background-color: var(--subtle-bg-color);
+}
+
+.validate-btn .material-symbols-outlined {
+    font-size: 1.5rem;
+}
+
+.validate-btn .loader-small {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 2px;
+    border-color: var(--subtle-text-color);
+    border-top-color: var(--primary-color);
+}
+
+.validate-btn.is-validating .material-symbols-outlined {
+    display: none;
+}
+.validate-btn:not(.is-validating) .loader-small {
+    display: none;
+}
+
+.validate-btn.success {
+    color: var(--success-color);
+}
+
+.validate-btn.error {
+    color: var(--error-color);
+}
+
+.validate-btn.error .material-symbols-outlined {
+    cursor: pointer; /* Show pointer on the 'X' icon */
+}
+
+.text-underline-red {
+    text-decoration: underline;
+    text-decoration-color: #ef4444;
+    text-decoration-thickness: 2px;
+}
+
+.message-area {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
+    min-height: 1.2em; /* Reserve space to prevent layout shift */
+    padding: 0.25rem 0;
+    white-space: pre-wrap; /* Allow line breaks in messages */
+    word-break: break-word; /* Break long words to prevent overflow */
+}
+
+.modal-form-description {
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
+    margin-bottom: 0;
+}
+
+.modal-form-description a {
+    color: var(--primary-color);
+}
+.message-area.error {
+    color: var(--error-color);
+    font-weight: 500;
+}
+
+.message-area.success {
+    color: var(--success-color-darker);
+    font-weight: 500;
+}
+html[data-theme="dark"] .message-area.success {
+    color: var(--success-color-dark);
+}
+
+.message-area.warning {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field label {
+    font-weight: 600;
+}
+
+.form-field input[type="text"],
+.form-field select {
+    /* Re-use styles from forms.css language-select */
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: var(--font-family);
+    background-color: var(--input-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-field select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+.form-field input[type="text"]:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.form-field .description {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+}
+
+#custom-model-download-btn {
+    width: 100%; /* Make it full width */
+}
+.cancel-install-btn:hover:not(:disabled) {
+    background-color: var(--error-color);
+    color: white;
+    border-color: var(--error-color);
+}
+
+.delete-btn:disabled {
+    color: var(--subtle-text-color);
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* --- Install Overlay --- */
+.install-overlay {
+    position: fixed; /* Use fixed to overlay the entire viewport, breaking out of the modal's width constraint */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(var(--bg-color-rgb), 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 3001; /* Must be higher than the main modal's z-index (3000) */
+}
+
+/* --- Footer Warning & Consent --- */
+.install-overlay > .system-warning-box-wrapper {
+    /* Sizing & Positioning */
+    width: 100%;
+    max-width: 735px; /* Slightly wider than standard modal (700px * 1.05) */
+    height: 60vh;
+    min-height: 500px; /* Ensure enough space for content */
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    /* Styling */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 2px solid #ef4444;
+    overflow: hidden;
+    font-family: var(--font-family); /* Ensure correct font is inherited */
+    color: #1F2937; /* Force dark text color for all themes */
+}
+
+/* Inverted Theme Logic */
+.system-warning-header {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 2px solid #ef4444;
+    flex-shrink: 0;
+    background-color: #ef4444;
+}
+
+.system-warning-body {
+    padding: 2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: flex-start; /* Align content to the top for proper scrolling */
+    align-items: center;
+    overflow-y: auto;
+    /* Custom scrollbar to match the main modal */
+    scrollbar-width: thin;
+    scrollbar-color: #A9A9A9 #F3F4F6; /* thumb track - fixed light theme colors */
+    background-color: #FFFFFF;
+}
+
+.system-warning-footer {
+    padding: 0.75rem 2rem;
+    background-color: #FFFFFF;
+    border-top: none;
+    flex-shrink: 0;
+}
+
+.system-warning-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+    color: white;
+}
+
+.consent-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.consent-checkbox-wrapper label {
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1rem;
+}
+
+.consent-checkbox-wrapper input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.warning-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: transparent;
+    padding: 0;
+    border: none;
+}
+.system-warning-body > .warning-text {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+    color: #4B5563; /* gray-600 */
+}
+
+
+.warning-text strong {
+    display: block;
+    margin-top: 0.75rem;
+    margin-bottom: 2rem;
+    word-break: break-all;
+    font-size: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+    background-color: #F3F4F6;
+}
+
+.warning-list {
+    width: 100%;
+    padding: 0 5%; /* Responsive padding */
+    text-align: left;
+}
+
+.warning-list p {
+    position: relative;
+    padding-left: 1.5em;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.warning-list p::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #ef4444;
+    font-weight: bold;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.text-underline-red {
+    text-decoration: underline;
+    text-decoration-color: #ef4444;
+    text-decoration-thickness: 2px;
+}
+
+.path-info-box {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: 1px solid #E5E7EB; /* gray-200 */
+    border-radius: 8px;
+    background-color: #F9FAFB; /* gray-50 */
+    text-align: center;
+}
+
+.path-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.path-location {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    word-break: break-all;
+    background-color: #F3F4F6; /* gray-100 */
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    margin: 0 0 0.75rem;
+}
+
+.path-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #4B5563; /* gray-600 */
+    margin: 0;
+}
+
+.final-note {
+    font-weight: 600;
+}
+/* Webkit scrollbar styles for the warning body */
+.system-warning-body::-webkit-scrollbar {
+    width: 12px;
+}
+
+.system-warning-body::-webkit-scrollbar-track {
+    background: #F3F4F6; /* Use fixed light-theme color */
+    border-radius: 6px;
+}
+
+.system-warning-body::-webkit-scrollbar-thumb {
+    background-color: #A9A9A9; /* Use fixed medium-gray for contrast */
+    border-radius: 6px;
+    border: 3px solid #F3F4F6; /* Match track color */
+}
+
+html[data-theme="dark"] .system-warning-box-wrapper .warning-text strong,
+html[data-theme="light"] .system-warning-box-wrapper .warning-text strong {
+    background-color: #F3F4F6;
+}
+
+.consent-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+}
+
+.consent-button {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid;
+}
+
+.consent-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.consent-button .material-symbols-outlined {
+    font-size: 1.3em;
+}
+
+.consent-button.continue {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+.consent-button.cancel {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive button labels */
+@media (max-width: 700px) {
+    .consent-button .button-label {
+        display: none;
+    }
+    .consent-button {
+        padding: 0.6rem;
+    }
+}
+
+/* --- Animation for user input --- */
+@keyframes pulse-validate-btn {
+    0% {
+        background-color: var(--subtle-bg-color);
+        color: var(--text-color);
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+    100% {
+        background-color: var(--subtle-bg-color);
+        color: var(--text-color);
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.validate-btn.is-typing {
+    animation: pulse-validate-btn 1.5s infinite ease-in-out;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 500px) {
+    /* Hide the progress text on smaller screens to save space */
+    .status-installing .progress-text {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .alert-info.dismissible .alert-content p {
+        text-align: center;
+    }
+}
