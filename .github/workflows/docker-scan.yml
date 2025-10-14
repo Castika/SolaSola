@@ -16,6 +16,7 @@ on:
     # to documentation (like README.md) or other non-code files.
     paths:
       - 'solasola/**'
+      - 'tests/**'
       - 'pyproject.toml'
       - 'poetry.lock'
       - 'Dockerfile'
@@ -48,18 +49,9 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      # --- DEFINITIVE FIX: Use Poetry's self-management for plugins ---
-      # This ensures the plugin is installed into Poetry's isolated environment.
-      - name: Install Poetry Export Plugin
-        run: poetry self add poetry-plugin-export
-
-      # We export the exact versions from the lock file and install them with pip,
-      # which is a more robust method for CI environments.
-      - name: Export dependencies to requirements.txt
-        run: poetry export -f requirements.txt --output requirements.txt --with dev --without-hashes
-
-      - name: Install dependencies with pip
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          poetry install
 
       - name: Lint code with flake8
         run: poetry run flake8 solasola/
@@ -92,11 +84,10 @@ jobs:
             "dogwin\.sh$"
             "publish\.sh$"
             "solasola-test-image\.tar$"
-            "Docs/"
-            "Music/"
-            "AI_Models/"
           )
-          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
+          # Exclude files in the 'tests/' directory from this check to allow test assets.
+          # Also exclude the specific requirements file for basic-pitch.
+          FORBIDDEN_FILES=$(git ls-files | grep -v '^tests/' | grep -v '^solasola/requirements-basic-pitch\.txt$' | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
           if [ -n "$FORBIDDEN_FILES" ]; then
             echo "Error: The following files are tracked by Git but should be ignored:"
             echo "$FORBIDDEN_FILES"

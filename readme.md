@@ -8,7 +8,7 @@
 
 ---
 
-> **⚠️ Security Notice**
+> **⚠️ Security Notice** 
 > This application is designed for personal use on a private network. Due to potential security risks, **do not expose this application to the public internet.**
 
 ---

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolaSola - Processing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon.png') }}">
+    <style>
+        /* Base Variables (Light/Dark Mode) */
+        :root {
+            --font-family-sans: 'Inter', sans-serif;
+            --border-radius-large: 12px;
+        }
+        html[data-theme="light"] {
+            --background-color-translucent: rgba(229, 231, 235, 0.75); /* gray-200 with opacity */
+            --background-color-raised: #FFFFFF;
+            --text-color-primary: #1F2937;
+            --text-color-secondary: #4B5563;
+            --border-color: #E5E7EB;
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --destructive-color: #EF4444;
+            --destructive-hover-color: #DC2626;
+        }
+        html[data-theme="dark"] {
+            --background-color-translucent: rgba(31, 41, 55, 0.75); /* gray-800 with opacity */
+            --background-color-raised: #1F2937;
+            --text-color-primary: #F9FAFB;
+            --text-color-secondary: #D1D5DB;
+            --border-color: #4B5563;
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            --destructive-color: #F87171;
+            --destructive-hover-color: #EF4444;
+        }
+
+        /* Page Layout */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: transparent;
+            font-family: var(--font-family-sans);
+            transition: background-color 0.3s ease;
+        }
+        /* --- FIX: Prevent blinking text cursor on non-input elements on Windows --- */
+        body *:not(input):not(textarea) {
+            caret-color: transparent;
+        }
+        .processing-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 32px;
+            color: var(--text-color-primary);
+            background-color: var(--background-color-raised);
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-large);
+        }
+
+        /* Progress Bar */
+        .analysis-progress-container {
+            display: flex;
+            width: 100%;
+            height: 8px; /* Increased height by 2px */
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: var(--border-color); /* Set track to border color */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stage {
+            display: flex;
+            position: relative;
+            height: 100%;
+        }
+        .sub-stage {
+            flex: 1;
+            height: 100%;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        .sub-stage-progress {
+            width: 0%;
+            height: 100%;
+            background-color: #3B82F6; /* Use a fixed blue color */
+            transition: width 0.2s ease-out;
+        }
+        .sub-stage-progress.pulsing {
+            animation: pulse-blue 2s infinite ease-in-out;
+        }
+        @keyframes pulse-blue {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Info & Button Container */
+        .progress-bar-wrapper {
+            width: 100%;
+            margin-bottom: 16px; /* Space between progress bar and cancel button */
+        }
+        #progress-info-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            width: 100%;
+        }
+        #progress-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color-secondary);
+            min-height: 1.4em;
+            line-height: 1.4;
+            margin-bottom: 8px; /* Space between message and progress bar */
+            text-align: center; /* Ensure text is centered, especially when it wraps */
+        }
+
+        /* Cancel Button */
+        .button {
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .button.destructive {
+            background-color: var(--destructive-color);
+            color: white;
+        }
+        .button.destructive:hover {
+            background-color: var(--destructive-hover-color);
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="processing-container">
+        <!-- 1. Message -->
+        <p id="progress-text">Initializing...</p>
+        <!-- 2. Progress Bar -->
+        <div class="progress-bar-wrapper">
+            <div id="progress-bar-container">
+                <!-- Dynamic progress bar will be built here -->
+            </div>
+        </div>
+        <!-- 3. Action Button -->
+        <button id="cancel-button" class="button destructive">
+            <span class="material-symbols-outlined">cancel</span>
+            <span>Cancel</span>
+        </button>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/processing.js') }}"></script>
+</body>
+</html>
