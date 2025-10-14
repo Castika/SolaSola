@@ -105,4 +105,14 @@ jobs:
             --load .
 
       - name: Scan image with Docker Scout
-        run: docker scout cves castika/solasola:ci-scan --exit-code --only-severity critical,high
+        run: |
+          docker scout cves castika/solasola:ci-scan \
+            --exit-code \
+            --only-severity critical,high \
+            --format sarif \
+            --output scout-report.sarif
+
+      - name: Upload Docker Scout SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scout-report.sarif
