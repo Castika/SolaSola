@@ -6,13 +6,18 @@ name: Docker Image Publishing
 on:
   push:
     branches: [ "main" ]
+    # CRITICAL SAFETY FEATURE: Only publish when application code changes
+    paths:
+      - 'solasola/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - 'Dockerfile'
+      - '.github/workflows/docker-publish.yml'
 
 jobs:
   build-and-publish:
     name: Build and Publish Image
     runs-on: ubuntu-latest
-    # This is a security best practice to prevent a compromised action from gaining
-    # more access than it needs.
     permissions:
       contents: read
       packages: write
@@ -22,8 +27,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # This step removes pre-installed toolchains that are not needed for this project,
-      # freeing up several gigabytes of space to prevent "No space left on device" errors.
       - name: Free up disk space on runner
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
