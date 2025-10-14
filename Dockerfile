@@ -129,3 +129,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 # Set the default command to run the application in production (no-debug) mode.
 CMD ["python", "-m", "solasola.app", "--no-debug"]
+# Trigger CI
