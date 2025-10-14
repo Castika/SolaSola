@@ -48,8 +48,15 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: Install dependencies
-        run: poetry install --with dev --no-root
+      # --- DEFINITIVE FIX: Use pip to install dependencies ---
+      # This avoids the platform-specific resolution errors seen with `poetry install`.
+      # We export the exact versions from the lock file and install them with pip,
+      # which is a more robust method for CI environments.
+      - name: Export dependencies to requirements.txt
+        run: poetry export -f requirements.txt --output requirements.txt --with dev --without-hashes
+
+      - name: Install dependencies with pip
+        run: pip install -r requirements.txt
 
       - name: Lint code with flake8
         run: poetry run flake8 solasola/
@@ -105,4 +112,14 @@ jobs:
             --load .
 
       - name: Scan image with Docker Scout
-        run: docker scout cves castika/solasola:ci-scan --exit-code --only-severity critical,high
+        run: |
+          docker scout cves castika/solasola:ci-scan \
+            --exit-code \
+            --only-severity critical,high \
+            --format sarif \
+            --output scout-report.sarif
+
+      - name: Upload Docker Scout SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scout-report.sarif
