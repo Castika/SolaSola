@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Lost - SolaSola</title>
+    <script>
+        // Immediately apply theme from localStorage to prevent FOUC
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        /* Inlined styles to make this page self-contained */
+        :root {
+            --primary-color: #3B82F6; /* blue-500 */
+            --subtle-bg-color: #F3F4F6; /* gray-100 */
+            --text-color: #1F2937; /* gray-800 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        html[data-theme="dark"] {
+            --subtle-bg-color: #374151; /* gray-700 */
+            --text-color: #F9FAFB; /* gray-50 */
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            flex-direction: column;
+            background-color: #111827; /* gray-900 for dark theme */
+            color: var(--text-color);
+            margin: 0;
+        }
+        /* --- FIX: Prevent blinking text cursor on non-input elements on Windows --- */
+        body *:not(input):not(textarea) {
+            caret-color: transparent;
+        }
+        html[data-theme="light"] body {
+            background-color: #FFFFFF;
+        }
+        .loader-content {
+            padding: 2rem;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            background-color: transparent;
+            border: 1px solid transparent; /* Make the fallback border transparent */
+        }
+        /* Inner content wrapper */
+        .inner-content {
+            background-color: var(--subtle-bg-color);
+            padding: 2rem;
+            border-radius: 11px; /* Slightly smaller than parent to avoid overlap */
+            position: relative;
+            z-index: 1; /* Ensure content is above the ::before pseudo-element */
+        }
+        .loader {
+            margin: 0 auto 1rem;
+        }
+        /* Animated border effect */
+        .loader-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400%; /* Make it much larger to ensure edges are always outside the viewport */
+            height: 400%;
+            background: conic-gradient(
+                transparent 0deg,
+                transparent 90deg,
+                var(--primary-color) 180deg,
+                transparent 270deg,
+                transparent 360deg
+            );
+            animation: rotate-border 4s linear infinite;
+            transform-origin: center center;
+            z-index: 0; /* Position it between the parent and the inner content */
+        }
+        @keyframes rotate-border {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader-content">
+        <div class="inner-content">
+            <div class="loader"></div>
+            <h1>Connection Lost</h1>
+            <p>Attempting to reconnect to the SolaSola server...</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Only run the connection check if this page is the top-level document.
+            if (window.top === window.self) {
+                const checkConnection = async () => {
+                    try {
+                        const response = await fetch('/health');
+                        if (response.ok) {
+                            window.location.href = '/';
+                        }
+                    } catch (error) {
+                        // Still offline, do nothing
+                    }
+                };
+                setInterval(checkConnection, 3000); // Check every 3 seconds
+            }
+        })();
+    </script>
+</body>
+</html>

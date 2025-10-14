@@ -1,0 +1,33 @@
+# Docker-specific files
+Dockerfile
+docker-compose.yml
+.dockerignore
+.python-version
+
+# Git version control
+.git/
+.gitignore
+
+
+# Local development scripts and environment
+dog.sh
+dogwin.sh
+publish.sh
+solasola-test-image.tar
+
+.venv/
+venv/
+
+# Local build artifacts
+__pycache__/
+*.pyc
+build.log
+
+# Documentation and other non-essential files
+README.md
+Docs/
+LICENSE.md
+
+# User data directories that should be volumes, not part of the image
+Music/
+AI_Models/
