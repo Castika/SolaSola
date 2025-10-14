@@ -1,0 +1,208 @@
+:root {
+    --primary-color: #3B82F6;
+    --primary-hover-color: #2563EB;
+    --primary-bg-subtle: #EFF6FF;
+
+    --primary-color-rgb: 59, 130, 246;
+    --background-color: #F9FAFB;
+    --container-background: #FFFFFF;
+    --card-background: #F9FAFB;
+    --subtle-bg-color: #F3F4F6;
+    --input-background: #FFFFFF;
+
+    --overlay-bg-color: rgba(255, 255, 255, 0.85);
+    --text-color: #1F2937;
+    --subtle-text-color: #1F2937; /* Changed from gray to black for better contrast */
+    --border-color: #E5E7EB;
+
+    --success-color: #10B981;
+    --success-color-darker: #065F46;
+    --success-color-dark: #047857;
+    --success-bg-subtle: #F0FDF4;
+    --success-border-subtle: #A7F3D0;
+
+    --warning-color: #D97706; /* amber-600 */
+    --warning-bg-subtle: #FFFBEB; /* amber-50 */
+    --warning-border-subtle: #FDE68A; /* amber-300 */
+
+    --error-color: #DC2626; /* red-600 */
+    --error-bg-subtle: #FEF2F2; /* red-50 */
+    --error-border-subtle: #FECACA; /* red-300 */
+
+    --scrollbar-track-color: var(--subtle-bg-color);
+    --scrollbar-thumb-color: var(--border-color);
+
+    --font-family: 'Inter', sans-serif;
+}
+
+html[data-theme="dark"] {
+    --primary-color: #60A5FA;
+    --primary-hover-color: #93C5FD;
+    --primary-bg-subtle: #1E3A8A;
+    --primary-color-rgb: 96, 165, 250;
+    --background-color: #111827;
+    --container-background: #111827; /* Match page background */
+    --card-background: #1F2937;      /* Use a lighter gray for cards */
+    --subtle-bg-color: #374151;
+    --input-background: #374151;
+    --overlay-bg-color: rgba(31, 41, 55, 0.85); /* gray-800 with opacity */
+    --text-color: #F9FAFB;
+    --subtle-text-color: #F9FAFB; /* Changed from gray to white for better contrast */
+    --border-color: #4B5563;
+    --success-color: #34D399;
+    --success-color-darker: #A7F3D0;
+    --success-color-dark: #6EE7B7;
+    --success-bg-subtle: #064E3B;
+    --success-border-subtle: #059669;
+
+    --warning-color: #FBBF24; /* amber-400 */
+    --warning-bg-subtle: #422006; /* amber-950 */
+    --warning-border-subtle: #78350F; /* amber-800 */
+
+    --scrollbar-track-color: var(--card-background);
+    --scrollbar-thumb-color: var(--border-color);
+
+}
+
+html {
+    /* Reserve space for the scrollbar to prevent layout shifts when modals open. */
+    scrollbar-gutter: stable;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    padding: 1rem 1rem 2rem;
+}
+
+/* --- FIX: Prevent blinking text cursor on non-input elements on Windows --- */
+/* This makes the text cursor (caret) transparent on all elements except for
+   standard input fields, solving the blinking issue in empty areas without
+   disabling text selection. */
+body *:not(input):not(textarea) {
+    caret-color: transparent;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--container-background);
+    padding: 2.5rem;
+    border-radius: 12px;
+    margin: 0 auto;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 0.5rem;
+}
+
+.header h1 .version-tag {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--subtle-text-color);
+    vertical-align: middle;
+    margin-left: 0.5rem;
+}
+
+.header p {
+    color: var(--subtle-text-color);
+    font-size: 1.1rem;
+}
+
+.theme-toggle-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--subtle-text-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.theme-toggle-button:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--subtle-text-color);
+    font-size: 0.9rem;
+}
+
+.castika-credit {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.disclaimer {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    opacity: 0.8;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+footer a, footer a:visited {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+    .header h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+    .file-upload-area {
+        padding: 1.5rem;
+    }
+    .form-section {
+        padding: 1rem;
+    }
+}

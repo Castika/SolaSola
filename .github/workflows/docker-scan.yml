@@ -48,8 +48,9 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      # --- DEFINITIVE FIX: Use pip to install dependencies ---
-      # This avoids the platform-specific resolution errors seen with `poetry install`.
+      - name: Install Poetry Export Plugin
+        run: pip install poetry-plugin-export
+
       # We export the exact versions from the lock file and install them with pip,
       # which is a more robust method for CI environments.
       - name: Export dependencies to requirements.txt

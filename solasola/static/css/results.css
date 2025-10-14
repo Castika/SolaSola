@@ -1,0 +1,373 @@
+#results-view {
+    display: none;
+}
+
+#results-container {
+    margin-top: 2rem;
+}
+
+#results-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.results-retention-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--subtle-bg-color);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+.results-retention-notice .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: var(--subtle-text-color);
+}
+.song-result-card {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.result-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-card-header .song-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    /* --- FIX: Prevent long titles from breaking the layout --- */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Crucial for flexbox truncation */
+}
+
+.result-item {
+    margin-bottom: 1rem;
+}
+
+.textarea-container {
+    position: relative;
+}
+
+.result-output {
+    width: 100%;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    background-color: var(--subtle-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    resize: vertical;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.textarea-container .copy-btn,
+.textarea-container .view-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--subtle-text-color); /* Set icon color */
+    border-radius: 6px;
+    padding: 0.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.textarea-container .view-btn {
+    right: 3rem; /* Position it to the left of the copy button */
+}
+
+.textarea-container .copy-btn:hover,
+.textarea-container .view-btn:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+.textarea-container .copy-btn.copied {
+    background-color: var(--success-bg-subtle);
+    color: var(--success-color-darker);
+    border-color: var(--success-border-subtle);
+}
+
+html[data-theme="dark"] .textarea-container .copy-btn.copied {
+    color: var(--success-color-darker);
+}
+
+.textarea-container .copy-btn .material-symbols-outlined,
+.textarea-container .view-btn .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+.back-button-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* --- Song Profile Card --- */
+.song-profile {
+    position: relative;
+}
+
+.song-profile .copy-btn {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--subtle-text-color); /* Set icon color */
+    border-radius: 6px;
+    padding: 0.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.song-profile .copy-btn:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+.profile-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the items */
+    gap: 0.75rem;
+}
+
+.profile-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--subtle-bg-color);
+    border-radius: 16px;
+    overflow: hidden;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+.genre-pill-wrapper {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.profile-key-badge {
+    background-color: var(--border-color);
+    padding: 0.3rem 0.75rem;
+    font-weight: 500;
+}
+
+.profile-value-text {
+    padding: 0.3rem 0.75rem;
+}
+
+.profile-card-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    opacity: 0.8;
+}
+
+/* --- NEW: Dark mode specific color swap for profile pills --- */
+html[data-theme="dark"] .profile-item {
+    background-color: var(--border-color); /* Use the darker color for the main body */
+}
+
+html[data-theme="dark"] .profile-key-badge {
+    background-color: var(--subtle-bg-color); /* Use the lighter color for the key */
+}
+
+/* --- NEW: Responsive layout for Song Profile on smaller screens --- */
+@media (max-width: 700px) {
+    .profile-pills {
+        /* Adjust gap for wrapped items */
+        gap: 1.25rem 1rem;
+    }
+
+    .profile-item {
+        /* Change from a horizontal pill to a vertical group */
+        flex-direction: column;
+        align-items: center; /* Center the key and value vertically */
+        
+        /* Remove the pill styling from the container */
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        overflow: visible;
+        padding: 0;
+    }
+
+    .profile-key-badge {
+        /* The key itself is now the pill/badge */
+        border-radius: 16px; /* Make it more rounded like a pill */
+        margin-bottom: 0.4rem;
+    }
+
+    .profile-value-text {
+        padding: 0; /* Remove horizontal padding */
+        text-align: center; /* Center the text itself if it wraps */
+    }
+
+    /* --- FIX: Ensure profile item background is transparent on mobile in dark mode --- */
+    html[data-theme="dark"] .profile-item {
+        background-color: transparent;
+        border: none;
+    }
+}
+
+/* --- ABC Score Card --- */
+.abc-result .tab-header-container {
+    margin-bottom: 1rem;
+}
+
+.tab-nav-wrapper {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.tab-nav-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
+
+.tab-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.tab-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: var(--subtle-text-color);
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* Overlap the wrapper's border */
+}
+
+.tab-btn:hover {
+    background-color: var(--subtle-bg-color);
+    color: var(--text-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.result-card-header .copy-all-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--subtle-text-color); /* Set icon color */
+    border-radius: 6px;
+    padding: 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.result-card-header .copy-all-btn:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+.result-card-header .copy-all-btn .material-symbols-outlined {
+    font-size: 1.3rem;
+}
+
+/* --- SRT Card --- */
+.sync-score-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.sync-score-notice.good {
+    background-color: var(--success-bg-subtle);
+    border: 1px solid var(--success-border-subtle);
+    color: var(--success-color-dark);
+}
+.sync-score-notice.warn {
+    background-color: var(--warning-bg-subtle);
+    border: 1px solid var(--warning-border-subtle);
+    color: var(--warning-color);
+}
+.sync-score-notice.bad {
+    background-color: var(--error-bg-subtle);
+    border: 1px solid var(--error-border-subtle);
+    color: var(--error-color);
+}
+
+.sync-score-notice .material-symbols-outlined {
+    font-size: 1.5rem;
+    margin-top: 0.1rem;
+}
+
+.sync-score-text strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.lyrics-method-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    background-color: var(--primary-bg-subtle);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    opacity: 0.9;
+}
+.lyrics-method-notice .material-symbols-outlined {
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+html[data-theme="dark"] .lyrics-method-notice {
+    background-color: var(--subtle-bg-color);
+}
+
+/* --- NEW: Chord Chart Card --- */
+.chord-result .tab-header-container {
+    margin-bottom: 1rem;
+}
