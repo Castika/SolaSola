@@ -2,11 +2,26 @@
 # whenever a pull request is opened against the 'main' branch.
 # Use this with branch protection rules to prevent merging faulty code.
 
+# This workflow automatically validates code, builds, and scans the Docker image
+# whenever a pull request is opened against the 'main' branch.
+# Use this with branch protection rules to prevent merging faulty code.
+
 name: Validate Pull Request
 
 on:
   pull_request:
     branches: [ "main" ]
+    # --- OPTIMIZATION: Run this workflow ONLY when relevant files are changed ---
+    # This prevents the long validation process from running on simple changes
+    # to documentation (like README.md) or other non-code files.
+    paths:
+      - 'solasola/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-scan.yml'
+      - '.github/workflows/docker-publish.yml'
 
 permissions:
   contents: read          # To check out the repository's code.
