@@ -37,9 +37,14 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 # Copy requirements from the first stage
 COPY --from=poetry-builder /app/requirements.txt .
 
-# Install dependencies into the virtual environment using pip
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt && \
+# Install dependencies in two steps to force CPU-only PyTorch.
+# 1. Install torch, torchaudio, and torchvision specifically from the CPU index.
+# 2. Install the rest of the packages from the requirements file.
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchaudio torchvision
+
+RUN pip install --no-cache-dir -r requirements.txt && \
     rm -rf /root/.cache/pip
 
 # --- HOTFIX: Globally disable numba caching in librosa ---
