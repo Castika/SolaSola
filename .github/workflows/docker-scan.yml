@@ -35,12 +35,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # --- FIX: Free up disk space on the runner ---
+        
       - name: Free up disk space
+        # This step removes large pre-installed toolchains (Android, .NET) to maximize available space.
+        # It also cleans up Docker resources before the build starts.
         run: |
+          echo "Initial disk space:"
+          df -h
+          docker system prune -af
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-
+          echo "Disk space after cleanup:"
+          df -h
+          
       - name: Set up Python and Poetry
         uses: actions/setup-python@v5
         with:
@@ -103,6 +109,8 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --cache-to type=inline \
+            --progress=plain \
             --tag castika/solasola:ci-scan \
             --load .
 
