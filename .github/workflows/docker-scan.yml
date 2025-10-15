@@ -85,12 +85,13 @@ jobs:
             "publish\.sh$"
             "solasola-test-image\.tar$"
           )
-          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
+          # Find forbidden files and replace newlines with spaces to ensure single-line output for the error message.
+          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")" | tr '\n' ' ')
 
           if [ -n "$FORBIDDEN_FILES" ]; then
             # Use a GitHub Actions error command to force the output to be visible.
             # This will create a clear annotation on the pull request.
-            echo "::error::The following forbidden files were found in the Git index: $FORBIDDEN_FILES"
+            echo "::error::Forbidden files found in Git index: $FORBIDDEN_FILES"
             exit 1
           fi
           echo "✅ No forbidden files are being tracked by Git."
