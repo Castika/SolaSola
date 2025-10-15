@@ -47,6 +47,11 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
 RUN pip install --no-cache-dir -r requirements.txt && \
     rm -rf /root/.cache/pip
 
+# --- OPTIMIZATION: Clean up the virtual environment to reduce image size ---
+RUN find $VENV_PATH -type d -name "__pycache__" -exec rm -rf {} + && \
+    find $VENV_PATH -type f -name "*.pyc" -delete && \
+    find $VENV_PATH -type f -name "*.o" -delete
+
 # --- HOTFIX: Globally disable numba caching in librosa ---
 # This command is now guaranteed to work because pip correctly installed librosa.
 RUN find $VENV_PATH/lib/python3.11/site-packages/librosa -type f -name "*.py" -print0 | xargs -0 sed -i 's/cache=True/cache=False/g'
@@ -70,6 +75,11 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir --no-deps "basic-pitch[tflite]" && \
     pip install --no-cache-dir "numpy<2.0" "librosa>=0.8.0" "scipy>=1.4.1" "soxr" "resampy<0.4.3,>=0.2.2" "scikit-learn" "mido>=1.1.16" "pretty_midi>=0.2.9" "mir-eval>=0.6" "typing-extensions" "tflite-runtime" && \
     rm -rf /root/.cache/pip
+
+# --- OPTIMIZATION: Clean up the basic-pitch venv as well ---
+RUN find /opt/venv_basic_pitch -type d -name "__pycache__" -exec rm -rf {} + && \
+    find /opt/venv_basic_pitch -type f -name "*.pyc" -delete && \
+    find /opt/venv_basic_pitch -type f -name "*.o" -delete
 
 # --- HOTFIX: Apply the same numba cache fix to this isolated environment ---
 RUN find /opt/venv_basic_pitch/lib/python3.11/site-packages/librosa -type f -name "*.py" -print0 | xargs -0 sed -i 's/cache=True/cache=False/g'
