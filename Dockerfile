@@ -39,7 +39,8 @@ COPY --from=poetry-builder /app/requirements.txt .
 
 # Install dependencies into the virtual environment using pip
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt && \
+    rm -rf /root/.cache/pip
 
 # --- HOTFIX: Globally disable numba caching in librosa ---
 # This command is now guaranteed to work because pip correctly installed librosa.
@@ -62,7 +63,8 @@ ENV PATH="/opt/venv_basic_pitch/bin:$PATH"
 # This avoids installing the full tensorflow package altogether.
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir --no-deps "basic-pitch[tflite]" && \
-    pip install --no-cache-dir "numpy<2.0" "librosa>=0.8.0" "scipy>=1.4.1" "soxr" "resampy<0.4.3,>=0.2.2" "scikit-learn" "mido>=1.1.16" "pretty_midi>=0.2.9" "mir-eval>=0.6" "typing-extensions" "tflite-runtime"
+    pip install --no-cache-dir "numpy<2.0" "librosa>=0.8.0" "scipy>=1.4.1" "soxr" "resampy<0.4.3,>=0.2.2" "scikit-learn" "mido>=1.1.16" "pretty_midi>=0.2.9" "mir-eval>=0.6" "typing-extensions" "tflite-runtime" && \
+    rm -rf /root/.cache/pip
 
 # --- HOTFIX: Apply the same numba cache fix to this isolated environment ---
 RUN find /opt/venv_basic_pitch/lib/python3.11/site-packages/librosa -type f -name "*.py" -print0 | xargs -0 sed -i 's/cache=True/cache=False/g'
