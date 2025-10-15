@@ -88,9 +88,9 @@ jobs:
           FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
 
           if [ -n "$FORBIDDEN_FILES" ]; then
-            echo "Error: The following files are tracked by Git but should be ignored:"
-            # Use '|| true' to ensure the echo command runs even if the script is set to exit on error.
-            echo "$FORBIDDEN_FILES" || true
+            # Use a GitHub Actions error command to force the output to be visible.
+            # This will create a clear annotation on the pull request.
+            echo "::error::The following forbidden files were found in the Git index: $FORBIDDEN_FILES"
             exit 1
           fi
           echo "✅ No forbidden files are being tracked by Git."
