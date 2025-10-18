@@ -1,6 +1,6 @@
 # --- Stage 1: Main Application Environment Builder ---
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
-FROM python:3.11-slim AS main-builder
+FROM python:3.11-slim AS poetry-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake git && rm -rf /var/lib/apt/lists/*
 
@@ -60,7 +60,7 @@ ENV BASIC_PITCH_PYTHON=/opt/venv_basic_pitch/bin/python
 ENV PATH="/opt/venv/bin:/opt/venv_basic_pitch/bin:$PATH"
 
 # Copy the site-packages from both builder stages into their respective final locations.
-COPY --from=main-builder $VENV_PATH $VENV_PATH
+COPY --from=poetry-builder $VENV_PATH $VENV_PATH
 COPY --from=basic-pitch-builder /opt/venv_basic_pitch /opt/venv_basic_pitch
 
 # Install runtime dependencies
