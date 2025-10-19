@@ -1,6 +1,6 @@
 # --- Stage 1: Main Application Environment Builder ---
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
-FROM python:3.11-slim AS poetry-builder
+FROM python:3.11 AS poetry-builder
 
 # --- DEFINITIVE FIX: Clean up apt cache in the same layer to save space ---
 # This prevents the small /var partition in the slim image from filling up during build.
@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # --- Stage 2: Basic-Pitch Environment Builder ---
 # This stage builds a completely separate virtual environment ONLY for basic-pitch and its specific dependencies.
-FROM python:3.11-slim AS basic-pitch-builder
+FROM python:3.11 AS basic-pitch-builder
 
 # --- DEFINITIVE FIX: Clean up apt cache in the same layer to save space ---
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
