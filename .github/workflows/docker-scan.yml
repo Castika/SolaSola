@@ -59,6 +59,12 @@ jobs:
         working-directory: .
         run: poetry config virtualenvs.in-project true
 
+      - name: Check available disk space before install
+        working-directory: .
+        run: |
+          echo "Available disk space before dependency installation:"
+          df -h .
+
       - name: Install dependencies
         working-directory: .
         env:
@@ -66,6 +72,8 @@ jobs:
           # This forces poetry/pip to use a directory on the large partition for downloads.
           TMPDIR: ${{ github.workspace }}/.tmp
         run: |
+          echo "Available disk space before dependency installation:"
+          df -h .
           mkdir -p .tmp
           poetry install
 
