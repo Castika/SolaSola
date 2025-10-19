@@ -36,8 +36,8 @@ jobs:
       - name: Maximize build disk space
         uses: easimon/maximize-build-space@v10
         with:
-          # --- DEFINITIVE FIX: Reserve more space for the runner's root filesystem ---
-          # This prevents the runner itself from running out of space when writing its own final logs.
+          # Reserve 2GB for the runner's root filesystem to prevent it from
+          # running out of space when writing its own final logs.
           root-reserve-mb: 2048
           swap-size-mb: 1024
           remove-dotnet: 'true'
