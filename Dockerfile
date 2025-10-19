@@ -2,7 +2,10 @@
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
 FROM python:3.11-slim AS poetry-builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake git && rm -rf /var/lib/apt/lists/*
+# --- DEFINITIVE FIX: Clean up apt cache in the same layer to save space ---
+# This prevents the small /var partition in the slim image from filling up during build.
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake git && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -35,7 +38,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # This stage builds a completely separate virtual environment ONLY for basic-pitch and its specific dependencies.
 FROM python:3.11-slim AS basic-pitch-builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+# --- DEFINITIVE FIX: Clean up apt cache in the same layer to save space ---
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

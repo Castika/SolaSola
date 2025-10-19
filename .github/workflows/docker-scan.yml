@@ -81,6 +81,12 @@ jobs:
           mkdir -p .tmp .poetry-cache .pip-cache
           poetry install
 
+      - name: Check available disk space after install
+        working-directory: .
+        run: |
+          echo "--- Available Disk Space After Install ---"
+          df -h .
+
       - name: Lint code with flake8
         working-directory: .
         run: poetry run flake8 solasola/
