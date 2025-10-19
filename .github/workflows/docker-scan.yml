@@ -33,19 +33,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Debug - Verify File Existence
-        working-directory: .
-        run: |
-          echo "--- Current Directory ---"
-          pwd
-          echo "--- Repository Root Contents ---"
-          ls -la
-          echo "--- Searching for pyproject.toml ---"
-          find . -name "pyproject.toml"
-
       - name: Maximize build disk space
         uses: easimon/maximize-build-space@v10
         with:
@@ -57,6 +44,9 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: true
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python and Poetry
         uses: actions/setup-python@v5
         with:
@@ -64,7 +54,6 @@ jobs:
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
-        # This action does not use working-directory, it installs poetry globally for the runner
 
       - name: Install dependencies
         working-directory: .
@@ -132,13 +121,12 @@ jobs:
             --load .
 
       - name: Scan image with Docker Scout
-        uses: docker/scout-action@v1
-        with:
-          command: cves,recommendations
-          image: castika/solasola:ci-scan
-          sarif-file: scout-report.sarif
-          only-severities: critical,high
-          exit-code: true
+        run: |
+          docker scout cves castika/solasola:ci-scan \
+            --exit-code \
+            --only-severity critical,high \
+            --format sarif \
+            --output scout-report.sarif
 
       - name: Upload Docker Scout SARIF report
         uses: github/codeql-action/upload-sarif@v3
