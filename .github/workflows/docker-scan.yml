@@ -160,6 +160,9 @@ jobs:
             --load .
 
       - name: Prune Docker Builder Cache
+        # --- DEFINITIVE FIX: Always run this step, even if the build fails ---
+        # This ensures that we clean up build cache to make space for the runner's own logs.
+        if: always()
         run: |
           echo "Pruning Docker builder cache to free up space..."
           docker builder prune -af
