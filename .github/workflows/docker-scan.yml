@@ -30,7 +30,10 @@ permissions:
 jobs:
   validate:
     name: Validate, Build, and Scan
-    runs-on: ubuntu-latest
+    # --- FIX: Use a larger runner with more disk space ---
+    # Standard runners have ~14GB, which is insufficient for this large Docker image.
+    # This runner provides 4 cores, 16GB RAM, and ~150GB of disk space.
+    runs-on: ubuntu-latest-4-cores
 
     steps:
       - name: Checkout repository

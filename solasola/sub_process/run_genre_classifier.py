@@ -78,7 +78,7 @@ def classify(task_id: str, audio_path_str: str, top_n: int = 3) -> list:
         # Load first 30s for efficiency.
         y, sr = librosa.load(audio_path_str, sr=16000, mono=True, duration=30.0)
 
-    inputs = feature_extractor(y, sampling_rate=sr, return_tensors="pt")
+    inputs = feature_extractor(y, sampling_rate=sr, return_tensors="pt", padding=True)
 
     with torch.no_grad():
         logits = model(**inputs).logits

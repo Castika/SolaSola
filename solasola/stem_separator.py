@@ -48,7 +48,8 @@ def run_demucs_separation(task_id: str, model, audio_path: str, output_dir: str,
         # name (e.g., output_dir/htdemucs/filename/).
         "-o", str(output_dir.resolve()),
         "-d", str(device),
-        "-n", model_name
+        "-n", model_name,
+        "--verbose"
     ]
     # For efficiency, if the user only requests vocals, we can use the --two-stems
     # option, which is significantly faster than a full 4-stem separation. # noqa
@@ -87,6 +88,6 @@ def get_stem_paths(demucs_output_dir: Path):
         logging.error(f"  -> Error: Demucs output directory not found at " # noqa
                       f"{demucs_output_dir}") # noqa
         return None
-    saved_stems = {p.stem: str(p.resolve()) for p in demucs_output_dir.glob('*.wav')}
+    saved_stems = {p.stem: str(p.resolve()) for p in demucs_output_dir.glob('*.flac')}
     print(f"  -> Found stems: {list(saved_stems.keys())}")
     return saved_stems

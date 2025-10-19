@@ -614,11 +614,12 @@ def process_audio(task_id, files, temp_dir, device, model_name, stems_output_dir
     if files['midi']:
         raise NotImplementedError("Direct MIDI processing path needs refactoring with new architecture.")
     
+    processing_format = "wav"
     if len(files['audio']) == 1 and files['audio'][0]['stem'] == 'full_mix':
         print("  -> Single audio file detected. Treating as a full mix for AI instrument separation.")
         original_audio_path = Path(files['audio'][0]['path'])
         
-        safe_audio_path = Path(temp_dir) / "processing_audio.wav"
+        safe_audio_path = Path(temp_dir) / f"processing_audio.{processing_format}"
         try:
             os.link(original_audio_path, safe_audio_path)
             print(f"  -> Created hard link for processing: {safe_audio_path.name}")
@@ -653,7 +654,7 @@ def process_audio(task_id, files, temp_dir, device, model_name, stems_output_dir
             # 4. Stop the watcher immediately to create the manifest for the downloaded files.
             print("  -> Signaling download watcher to finalize and create manifest...")
             subprocess.run([sys.executable, "-m", "solasola.sub_process.demucs_download_watcher", "--action", "stop", "--task-id", task_id, "--model-name", model_name], check=True)
-            print("  -> Watcher has been signaled and manifest created.")
+            print(f"  -> Watcher has been signaled. Using model '{model_name}' for separation.")
             check_for_cancellation(task_id)
 
             # 5. Run the actual Demucs separation process using the pre-loaded model.
@@ -664,38 +665,49 @@ def process_audio(task_id, files, temp_dir, device, model_name, stems_output_dir
             if demucs_proc:
                 TASKS[task_id]['process'] = demucs_proc
 
-                # Use the dedicated parser to handle stdout parsing.
-                progress_parser = DemucsProgressParser(model_name)
-                line_buffer = ""
-                if demucs_proc.stdout:
-                    with demucs_proc.stdout:
-                        for char in iter(lambda: demucs_proc.stdout.read(1), ''):
-                            if char in ['\r', '\n']:
-                                if line_buffer:
-                                    # --- ROBUSTNESS FIX ---
-                                    # Wrap the parsing logic in a try-except block. This ensures that if
-                                    # Demucs changes its output format in the future, a parsing error will
-                                    # not crash the entire stem separation process. The progress bar might
-                                    # stop, but the core functionality will continue.
-                                    try:
-                                        progress_update = progress_parser.parse_line(line_buffer)
-                                        if progress_update:
-                                            update_detailed_status(task_id, progress_update['stage'], progress_update['sub_stage'], 
-                                                                   progress_update['progress'], progress_update['message'])
-                                    except Exception as e:
-                                        print(f"  -> [WARNING] Demucs progress parsing failed: {e}. Separation will continue.")
-                                    check_for_cancellation(task_id)
-                                
-                                line_buffer = ""
-                            else:
-                                line_buffer += char
+                # --- FINAL FIX: Use a non-blocking thread to read stdout in real-time ---
+                # This avoids the deadlock caused by reading a blocking pipe in the main thread
+                # while also allowing for real-time progress updates.
+                output_lines = []
+                def pipe_reader(pipe, line_list):
+                    try:
+                        with pipe:
+                            for line in iter(pipe.readline, ''):
+                                line_list.append(line)
+                    except Exception as e:
+                        print(f"  -> [Pipe Reader Thread] Error: {e}")
 
-                demucs_proc.wait()
+                reader_thread = threading.Thread(target=pipe_reader, args=(demucs_proc.stdout, output_lines))
+                reader_thread.daemon = True
+                reader_thread.start()
+
+                progress_parser = DemucsProgressParser(model_name)
+                processed_line_count = 0
+                while demucs_proc.poll() is None:
+                    # Process lines as they become available
+                    # --- DEFINITIVE FIX: Do not consume the log lines. Iterate over a copy. ---
+                    # This preserves the full log for error reporting if the process fails.
+                    for i in range(processed_line_count, len(output_lines)):
+                        line = output_lines[i]
+                        progress_update = progress_parser.parse_line(line)
+                        if progress_update:
+                            update_detailed_status(task_id, progress_update['stage'], progress_update['sub_stage'],
+                                                   progress_update['progress'], progress_update['message'])
+                    processed_line_count = len(output_lines)
+                    check_for_cancellation(task_id)
+                    time.sleep(0.1) # Small sleep to prevent a busy-wait loop
+
+                # Wait for the reader thread to finish processing any remaining output
+                reader_thread.join()
+
                 TASKS[task_id]['process'] = None
                 check_for_cancellation(task_id)
 
                 if demucs_proc.returncode != 0:
-                    raise Exception("Demucs separation process failed.")
+                    # Join all captured output lines to form the final error message
+                    full_output = "".join(output_lines).strip()
+                    error_message = full_output if full_output else "Demucs separation process failed with a non-zero exit code."
+                    raise Exception(error_message)
 
         finally:
             pass # The watcher is now stopped before separation begins.
