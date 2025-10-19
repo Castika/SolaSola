@@ -1,11 +1,14 @@
 # --- Stage 1: Main Application Environment Builder ---
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
-FROM python:3.11-slim AS poetry-builder
+FROM python:3.11 AS poetry-builder
 
 # --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
-# This prevents the small /var partition in the slim image from filling up.
+# This prevents the small /var partition in the slim image from filling up by breaking down 'build-essential'.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && apt-get clean && \
+    echo "--- Disk space before installing build tools ---" && df -h && \
+    apt-get install -y --no-install-recommends gcc && apt-get clean && \
+    apt-get install -y --no-install-recommends g++ && apt-get clean && \
+    apt-get install -y --no-install-recommends make && apt-get clean && \
     apt-get install -y --no-install-recommends cmake && apt-get clean && \
     apt-get install -y --no-install-recommends git && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -42,7 +45,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 FROM python:3.11-slim AS basic-pitch-builder
 
 # --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    echo "--- Disk space before installing build tools (basic-pitch) ---" && df -h && \
+    apt-get install -y --no-install-recommends gcc && apt-get clean && \
+    apt-get install -y --no-install-recommends g++ && apt-get clean && \
+    apt-get install -y --no-install-recommends make && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

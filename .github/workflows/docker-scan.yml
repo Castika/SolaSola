@@ -28,6 +28,7 @@ permissions:
   pull-requests: write    # To post status checks back to the pull request.
 
 jobs:
+  # This is the main validation job.
   validate:
     name: Validate, Build, and Scan
     runs-on: ubuntu-latest
@@ -45,6 +46,15 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: true
+
+      - name: Analyze Disk Usage After Cleanup
+        run: |
+          echo "--- Analyzing disk usage on the runner's root filesystem ---"
+          echo "The following are the 30 largest files/directories on the root partition:"
+          # Use 'du' to find disk usage, sort by human-readable size, and show the top 30.
+          # This helps identify what is consuming space on the small root partition.
+          sudo du -ah / | sort -rh | head -n 30
+          echo "----------------------------------------------------------------"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -166,3 +176,20 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: scout-report.sarif
+
+# This job runs regardless of whether the 'validate' job succeeded or failed.
+# It's the equivalent of a 'finally' block in a try-catch statement.
+post-cleanup:
+  name: Post-Job Cleanup and Diagnostics
+  runs-on: ubuntu-latest
+  # The 'if: always()' condition ensures this job runs even if 'validate' fails.
+  if: always()
+  # This job needs the results of the 'validate' job to decide what to do.
+  needs: validate
+
+  steps:
+    - name: Display Final Disk Space
+      run: |
+        echo "--- Final Disk Space on Runner ---"
+        df -h
+        echo "This information is useful for diagnosing 'No space left on device' errors."
