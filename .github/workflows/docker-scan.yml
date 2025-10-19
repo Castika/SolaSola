@@ -30,20 +30,26 @@ permissions:
 jobs:
   validate:
     name: Validate, Build, and Scan
-    # --- FIX: Use a larger runner with more disk space ---
     defaults:
       run:
         # Ensure all run commands execute in the root of the checked-out repository
         working-directory: .
 
-    # Standard runners have ~14GB, which is insufficient for this large Docker image.
-    # This runner provides 4 cores, 16GB RAM, and ~150GB of disk space. -> Revert to standard runner
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         
+      - name: Debug - Verify File Existence
+        run: |
+          echo "--- Current Directory ---"
+          pwd
+          echo "--- Repository Root Contents ---"
+          ls -la
+          echo "--- Searching for pyproject.toml ---"
+          find . -name "pyproject.toml"
+
       - name: Maximize build disk space
         uses: easimon/maximize-build-space@v10
         with:
