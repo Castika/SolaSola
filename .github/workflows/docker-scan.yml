@@ -177,19 +177,19 @@ jobs:
         with:
           sarif_file: scout-report.sarif
 
-# This job runs regardless of whether the 'validate' job succeeded or failed.
-# It's the equivalent of a 'finally' block in a try-catch statement.
-post-cleanup:
-  name: Post-Job Cleanup and Diagnostics
-  runs-on: ubuntu-latest
-  # The 'if: always()' condition ensures this job runs even if 'validate' fails.
-  if: always()
-  # This job needs the results of the 'validate' job to decide what to do.
-  needs: validate
+  # This job runs regardless of whether the 'validate' job succeeded or failed.
+  # It's the equivalent of a 'finally' block in a try-catch statement.
+  post-cleanup:
+    name: Post-Job Cleanup and Diagnostics
+    runs-on: ubuntu-latest
+    # The 'if: always()' condition ensures this job runs even if 'validate' fails.
+    if: always()
+    # This job needs the results of the 'validate' job to decide what to do.
+    needs: validate
 
-  steps:
-    - name: Display Final Disk Space
-      run: |
-        echo "--- Final Disk Space on Runner ---"
-        df -h
-        echo "This information is useful for diagnosing 'No space left on device' errors."
+    steps:
+      - name: Display Final Disk Space
+        run: |
+          echo "--- Final Disk Space on Runner ---"
+          df -h
+          echo "This information is useful for diagnosing 'No space left on device' errors."
