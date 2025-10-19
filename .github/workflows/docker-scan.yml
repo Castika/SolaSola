@@ -149,6 +149,11 @@ jobs:
             --tag castika/solasola:ci-scan \
             --load .
 
+      - name: Prune Docker Builder Cache
+        run: |
+          echo "Pruning Docker builder cache to free up space..."
+          docker builder prune -af
+
       - name: Scan image with Docker Scout
         run: |
           docker scout cves castika/solasola:ci-scan \
