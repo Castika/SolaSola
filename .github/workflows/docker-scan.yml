@@ -48,12 +48,21 @@ jobs:
           remove-docker-images: true
 
       - name: Analyze Disk Usage After Cleanup
+        # This step now performs two functions:
+        # 1. Manually remove additional large toolchains that `maximize-build-space` might miss.
+        # 2. Analyze the remaining disk usage to confirm space has been freed.
         run: |
+          echo "--- Manually removing additional large toolchains ---"
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/lib/jvm
+          echo "--- Additional cleanup complete ---"
+
           echo "--- Analyzing disk usage on the runner's root filesystem ---"
           echo "The following are the 30 largest files/directories on the root partition:"
           # Use 'du' to find disk usage, sort by human-readable size, and show the top 30.
           # This helps identify what is consuming space on the small root partition.
-          sudo du -ah / | sort -rh | head -n 30
+          sudo du -ah / --exclude=/proc --exclude=/dev --exclude=/sys --exclude=${{ github.workspace }} | sort -rh | head -n 30
           echo "----------------------------------------------------------------"
 
       - name: Checkout repository
@@ -106,6 +115,11 @@ jobs:
       - name: Run tests with pytest
         working-directory: .
         run: poetry run pytest
+
+      - name: Clean up test artifacts
+        working-directory: .
+        run: |
+          rm -rf .pytest_cache
 
       - name: Check for forbidden files tracked by Git
         working-directory: .
