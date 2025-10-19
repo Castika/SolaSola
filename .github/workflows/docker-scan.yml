@@ -47,6 +47,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure temporary directory on the large partition
+        working-directory: .
+        run: |
+          mkdir -p .tmp
+          echo "TMPDIR=${{ github.workspace }}/.tmp" >> $GITHUB_ENV
+          echo "Using temporary directory: ${{ github.workspace }}/.tmp"
+
       - name: Set up Python and Poetry
         uses: actions/setup-python@v5
         with:
