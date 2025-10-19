@@ -1,8 +1,9 @@
 # --- Stage 1: Main Application Environment Builder ---
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
-FROM python:3.11 AS poetry-builder
+FROM python:3.11-slim AS poetry-builder
 
-# Install build dependencies one by one and clean up immediately to minimize disk usage during build.
+# --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
+# This prevents the small /var partition in the slim image from filling up.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential && apt-get clean && \
     apt-get install -y --no-install-recommends cmake && apt-get clean && \
@@ -38,9 +39,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # --- Stage 2: Basic-Pitch Environment Builder ---
 # This stage builds a completely separate virtual environment ONLY for basic-pitch and its specific dependencies.
-FROM python:3.11 AS basic-pitch-builder
+FROM python:3.11-slim AS basic-pitch-builder
 
-# Install build dependencies and clean up immediately.
+# --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -51,7 +52,7 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 
 # Install basic-pitch with its specific (older) numpy version.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "numpy==1.26.4" "librosa>=0.8.0" "scipy>=1.4.1" "soxr" "resampy<0.4.3,>=0.2.2" "scikit-learn" "mido>=1.1.16" "pretty_midi>=0.2.9" "mir-eval>=0.6" "typing-extensions" "tflite-runtime" && \
+    pip install --no-cache-dir "numpy<2.0" "librosa>=0.8.0" "scipy>=1.4.1" "soxr" "resampy<0.4.3,>=0.2.2" "scikit-learn" "mido>=1.1.16" "pretty_midi>=0.2.9" "mir-eval>=0.6" "typing-extensions" "tflite-runtime" && \
     pip install --no-cache-dir --no-deps "basic-pitch[tflite]" && \
     # Aggressive cleanup
     find $VENV_PATH -type d -name "__pycache__" -exec rm -rf {} + && \
