@@ -22,11 +22,6 @@ on:
       - 'Dockerfile'
       - '.github/workflows/docker-scan.yml'
 
-defaults:
-  run:
-    # Ensure all run commands execute in the root of the checked-out repository
-    working-directory: .
-
 permissions:
   contents: read          # To check out the repository's code.
   security-events: write  # To upload the SARIF results from Docker Scout to the GitHub Security tab.
@@ -36,6 +31,11 @@ jobs:
   validate:
     name: Validate, Build, and Scan
     # --- FIX: Use a larger runner with more disk space ---
+    defaults:
+      run:
+        # Ensure all run commands execute in the root of the checked-out repository
+        working-directory: .
+
     # Standard runners have ~14GB, which is insufficient for this large Docker image.
     # This runner provides 4 cores, 16GB RAM, and ~150GB of disk space. -> Revert to standard runner
     runs-on: ubuntu-latest
