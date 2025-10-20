@@ -1,17 +1,8 @@
 # --- Stage 1: Main Application Environment Builder ---
 # This stage builds the primary virtual environment with all dependencies EXCEPT basic-pitch.
-FROM python:3.11 AS poetry-builder
+FROM python:3.11-slim AS poetry-builder
 
-# --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
-# This prevents the small /var partition in the slim image from filling up by breaking down 'build-essential'.
-RUN apt-get update && \
-    echo "--- Disk space before installing build tools ---" && df -h && \
-    apt-get install -y --no-install-recommends gcc && apt-get clean && \
-    apt-get install -y --no-install-recommends g++ && apt-get clean && \
-    apt-get install -y --no-install-recommends make && apt-get clean && \
-    apt-get install -y --no-install-recommends cmake && apt-get clean && \
-    apt-get install -y --no-install-recommends git && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake git && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -30,11 +21,13 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
     sed -i '/tflite-runtime/d' requirements.txt
 
 # Install main dependencies
+# --- DEFINITIVE FIX: Split pip install into multiple layers to manage space ---
+# Install all other requirements first.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt && \
-    # --- DEFINITIVE FIX: Re-install torch and torchaudio AFTER requirements.txt ---
-    # This ensures our pinned version (which doesn't need torchcodec) overwrites any newer version pulled in by other dependencies.
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu "torch==2.2.2" "torchaudio==2.2.2" && \
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+
+# Install the large torch packages in a separate layer to ensure sufficient temp space.
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu "torch==2.2.2" "torchaudio==2.2.2" && \
     # Aggressive cleanup
     find $VENV_PATH -type d -name "__pycache__" -exec rm -rf {} + && \
     find $VENV_PATH -type f -name "*.pyc" -delete && \
@@ -44,12 +37,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # This stage builds a completely separate virtual environment ONLY for basic-pitch and its specific dependencies.
 FROM python:3.11-slim AS basic-pitch-builder
 
-# --- DEFINITIVE FIX: Install packages one-by-one and clean up immediately ---
-RUN apt-get update && \
-    echo "--- Disk space before installing build tools (basic-pitch) ---" && df -h && \
-    apt-get install -y --no-install-recommends gcc && apt-get clean && \
-    apt-get install -y --no-install-recommends g++ && apt-get clean && \
-    apt-get install -y --no-install-recommends make && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
