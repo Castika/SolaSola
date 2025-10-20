@@ -44,7 +44,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          remove-docker-images: true
+          docker-images: true
 
       - name: Verify Disk Space After Cleanup
         run: |
@@ -171,6 +171,13 @@ jobs:
         run: |
           echo "Pruning Docker builder cache to free up space..."
           docker builder prune -af
+
+      - name: Log in to Docker Hub
+        # This step is crucial for Docker Scout to authenticate and check for entitlements.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Scan image with Docker Scout
         # --- DEFINITIVE FIX: Use the official Docker Scout action ---
