@@ -45,13 +45,6 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-
-      - name: Verify Disk Space After Cleanup
-        run: |
-          echo "--- Available Disk Space After Aggressive Cleanup ---"
-          df -h /
-          echo "----------------------------------------------------------------"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -66,18 +59,6 @@ jobs:
       - name: Configure Poetry to use a local virtualenv
         working-directory: .
         run: poetry config virtualenvs.in-project true
-
-      - name: Check available disk space before install
-        working-directory: .
-        run: |
-          echo "--- Available Disk Space ---"
-          echo "Workspace:"
-          df -h .
-          echo "Root:"
-          df -h /
-          echo "Runner Home:"
-          df -h /home/runner
-
       - name: Install dependencies
         working-directory: .
         env:
@@ -92,13 +73,6 @@ jobs:
       - name: Clean up Poetry and pip caches
         run: |
           rm -rf ${{ github.workspace }}/.poetry-cache ${{ github.workspace }}/.pip-cache
-
-      - name: Check available disk space after install
-        working-directory: .
-        run: |
-          echo "--- Available Disk Space After Install ---"
-          df -h .
-
       - name: Lint code with flake8
         working-directory: .
         run: poetry run flake8 solasola/
@@ -189,7 +163,6 @@ jobs:
           image: castika/solasola:ci-scan
           exit-code: true
           only-severities: critical,high
-          sarif-file: scout-report.sarif
 
       - name: Upload Docker Scout SARIF report
         uses: github/codeql-action/upload-sarif@v3
