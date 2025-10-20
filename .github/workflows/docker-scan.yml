@@ -53,7 +53,10 @@ jobs:
         # 2. Analyze the remaining disk usage to confirm space has been freed.
         run: |
           echo "--- Running Apache Flink's aggressive disk cleanup script ---"
-          curl -sSL https://raw.githubusercontent.com/apache/flink/master/tools/ci/free_disk_space.sh | bash
+          # --- DEFINITIVE FIX: Download script first, then execute. ---
+          # This prevents piping a curl 404 error into bash.
+          curl -sSL --fail https://raw.githubusercontent.com/apache/flink/master/tools/ci/free_disk_space.sh -o /tmp/free_disk_space.sh
+          bash /tmp/free_disk_space.sh
           echo "--- Flink script complete ---"
 
           echo "--- Manually removing additional large toolchains ---"
