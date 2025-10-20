@@ -34,52 +34,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Maximize build disk space
-        uses: easimon/maximize-build-space@v10
+      - name: Free up disk space (jlumbroso/free-disk-space)
+        uses: jlumbroso/free-disk-space@v1.3.1
         with:
-          # Reserve 2GB for the runner's root filesystem to prevent it from
-          # running out of space when writing its own final logs.
-          root-reserve-mb: 2048
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
+          # This is a more aggressive and reliable cleanup action that replaces
+          # both the 'maximize-build-space' action and the broken Flink script.
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
           remove-docker-images: true
 
-      - name: Analyze Disk Usage After Cleanup
-        # This step now performs two functions:
-        # 1. Manually remove additional large toolchains that `maximize-build-space` might miss.
-        # 2. Analyze the remaining disk usage to confirm space has been freed.
+      - name: Verify Disk Space After Cleanup
         run: |
-          echo "--- Running Apache Flink's aggressive disk cleanup script ---"
-          # --- DEFINITIVE FIX: Download script first, then execute. ---
-          # This prevents piping a curl 404 error into bash.
-          curl -sSL --fail https://raw.githubusercontent.com/apache/flink/master/tools/ci/free_disk_space.sh -o /tmp/free_disk_space.sh
-          bash /tmp/free_disk_space.sh
-          echo "--- Flink script complete ---"
-
-          echo "--- Manually removing additional large toolchains ---"
-          # These were identified from the 'du' command in previous runs
-          # as large, unnecessary toolchains for this Python project.
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/lib/jvm
-          sudo rm -rf /usr/local/share/powershell
-          sudo rm -rf /opt/hostedtoolcache/go
-          sudo rm -rf /usr/local/julia*
-          sudo rm -rf /usr/lib/google-cloud-sdk
-          sudo rm -rf /opt/microsoft
-          sudo rm -rf /usr/share/miniconda
-          sudo rm -rf /opt/hostedtoolcache/node
-          sudo rm -rf /opt/az
-          echo "--- Additional cleanup complete ---"
-
-          echo "--- Analyzing disk usage on the runner's root filesystem ---"
-          echo "The following are the 30 largest files/directories on the root partition:"
-          # Use 'du' to find disk usage, sort by human-readable size, and show the top 30.
-          # This helps identify what is consuming space on the small root partition.
-          sudo du -ah / --exclude=/proc --exclude=/dev --exclude=/sys --exclude=${{ github.workspace }} | sort -rh | head -n 30
+          echo "--- Available Disk Space After Aggressive Cleanup ---"
+          df -h /
           echo "----------------------------------------------------------------"
 
       - name: Checkout repository
