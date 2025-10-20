@@ -153,18 +153,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Scan image with Docker Scout
-        # --- DEFINITIVE FIX: Use the official Docker Scout action ---
-        # This is more robust than a manual `run` command and ensures the correct
-        # version and flags are used, resolving the 'unknown flag' error.
-        # --- HOTFIX: Increase timeout to prevent cancellation during long scans ---
-        timeout-minutes: 30
-        uses: docker/scout-action@v1
+      - name: Scan image with Trivy
+        # --- DEFINITIVE FIX: Replace Docker Scout with Trivy ---
+        # Trivy runs locally, avoiding the network-related timeout/cancellation
+        # issues seen with Docker Scout's "storing image for indexing" step.
+        # It's faster, more reliable for this CI environment, and still
+        # produces the required SARIF output for GitHub Security.
+        uses: aquasecurity/trivy-action@master
         with:
-          command: cves
-          image: castika/solasola:ci-scan
-          exit-code: true
-          only-severities: critical,high
+          image-ref: 'castika/solasola:ci-scan'
+          format: 'sarif'
+          output: 'scout-report.sarif' # Keep the filename for the next step
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
 
       - name: Upload Docker Scout SARIF report
         uses: github/codeql-action/upload-sarif@v3
