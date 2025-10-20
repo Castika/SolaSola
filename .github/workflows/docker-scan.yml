@@ -53,9 +53,18 @@ jobs:
         # 2. Analyze the remaining disk usage to confirm space has been freed.
         run: |
           echo "--- Manually removing additional large toolchains ---"
+          # These were identified from the 'du' command in previous runs
+          # as large, unnecessary toolchains for this Python project.
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf /usr/share/swift
           sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /usr/local/julia*
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /opt/microsoft
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /opt/hostedtoolcache/node
           echo "--- Additional cleanup complete ---"
 
           echo "--- Analyzing disk usage on the runner's root filesystem ---"
