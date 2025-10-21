@@ -15,7 +15,7 @@
 
 ## English
 
-SolaSola is a desktop application that analyzes audio files (MP3, WAV, etc.) to automatically generate instrument-specific scores (in ABC notation) and chord progressions. It runs securely on your local machine via Docker, requiring no complex setup.
+SolaSola is a desktop application that analyzes music files with AI to understand genre and structure, and extracts WAV stems, MIDI, chords, and ABC notation scores. It runs securely on your local machine via Docker, requiring no complex setup.
 
 ### Key Features
 
@@ -26,6 +26,7 @@ SolaSola is a desktop application that analyzes audio files (MP3, WAV, etc.) to 
 -   **Local & Private**: All file processing and AI analysis run directly on your computer. Your files are never sent to an external server, ensuring your privacy and copyright are protected.
 -   **Cache System**: The results of an analyzed file are saved as a cache, significantly reducing processing time when analyzing the same file again.
 
+> **Note on GPU Support**: While the application can detect NVIDIA GPUs (CUDA), this feature is currently **experimental and untested**. For guaranteed stability, please run the application in a CPU-only environment.
 ### Quickstart
 
 SolaSola runs in a secure environment on your computer using Docker. Follow these steps to get started.
@@ -108,7 +109,7 @@ This method ensures that all your data, like downloaded AI models and analysis r
 
 ## 한국어
 
-SolaSola는 오디오 파일(MP3, WAV 등)을 분석하여 악기별 악보(ABC 표기법), 코드 진행을 자동으로 생성해주는 데스크톱 애플리케이션입니다. 복잡한 설정 없이 Docker를 통해 로컬 컴퓨터에서 모든 작업을 안전하게 처리합니다.
+SolaSola는 음악파일을 AI 도구로 분석하여, 쟝르, 구조를 파악하고, Wav stem, MID, Chord, abc 악보를 추출하는 도구입니다. 복잡한 설정 없이 Docker를 통해 로컬 컴퓨터에서 모든 작업을 안전하게 처리합니다.
 
 ### 주요 기능
 
@@ -119,6 +120,7 @@ SolaSola는 오디오 파일(MP3, WAV 등)을 분석하여 악기별 악보(ABC 
 -   **로컬 환경 및 개인정보 보호**: 모든 파일 처리와 AI 분석은 사용자의 컴퓨터에서 직접 실행됩니다. 파일이 외부 서버로 전송되지 않아 개인정보와 저작권을 안전하게 보호합니다.
 -   **캐시 시스템**: 한번 분석한 파일의 결과는 캐시로 저장되어, 동일한 파일을 다시 분석할 때 처리 시간을 크게 단축합니다.
 
+> **GPU 지원 관련 참고**: 이 애플리케이션은 NVIDIA GPU(CUDA)를 감지할 수 있지만, 이 기능은 현재 **실험적이며 테스트되지 않았습니다**. 안정적인 사용을 위해 CPU 전용 환경에서 실행하는 것을 권장합니다.
 ### 빠른 시작
 
 SolaSola는 Docker를 사용하여 사용자의 컴퓨터에서 안전한 환경으로 실행됩니다. 아래 단계를 따라 시작하세요.
