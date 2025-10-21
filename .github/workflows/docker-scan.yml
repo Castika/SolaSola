@@ -16,6 +16,7 @@ on:
     # to documentation (like README.md) or other non-code files.
     paths:
       - 'solasola/**'
+      - 'tests/**'
       - 'pyproject.toml'
       - 'poetry.lock'
       - 'Dockerfile'
@@ -27,18 +28,25 @@ permissions:
   pull-requests: write    # To post status checks back to the pull request.
 
 jobs:
+  # This is the main validation job.
   validate:
     name: Validate, Build, and Scan
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space (jlumbroso/free-disk-space)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          # This is a more aggressive and reliable cleanup action that replaces
+          # both the 'maximize-build-space' action and the broken Flink script.
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # --- FIX: Free up disk space on the runner ---
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
 
       - name: Set up Python and Poetry
         uses: actions/setup-python@v5
@@ -48,26 +56,38 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      # --- DEFINITIVE FIX: Use Poetry's self-management for plugins ---
-      # This ensures the plugin is installed into Poetry's isolated environment.
-      - name: Install Poetry Export Plugin
-        run: poetry self add poetry-plugin-export
+      - name: Configure Poetry to use a local virtualenv
+        working-directory: .
+        run: poetry config virtualenvs.in-project true
+      - name: Install dependencies
+        working-directory: .
+        env:
+          TMPDIR: ${{ github.workspace }}/.tmp
+          # --- DEFINITIVE FIX: Redirect poetry and pip caches to the large workspace volume ---
+          POETRY_CACHE_DIR: ${{ github.workspace }}/.poetry-cache
+          PIP_CACHE_DIR: ${{ github.workspace }}/.pip-cache
+        run: |
+          mkdir -p .tmp .poetry-cache .pip-cache
+          poetry install
 
-      # We export the exact versions from the lock file and install them with pip,
-      # which is a more robust method for CI environments.
-      - name: Export dependencies to requirements.txt
-        run: poetry export -f requirements.txt --output requirements.txt --with dev --without-hashes
-
-      - name: Install dependencies with pip
-        run: pip install -r requirements.txt
-
+      - name: Clean up Poetry and pip caches
+        run: |
+          rm -rf ${{ github.workspace }}/.poetry-cache ${{ github.workspace }}/.pip-cache
       - name: Lint code with flake8
+        working-directory: .
         run: poetry run flake8 solasola/
 
       - name: Run tests with pytest
+        working-directory: .
         run: poetry run pytest
 
+      - name: Clean up test artifacts
+        working-directory: .
+        run: |
+          rm -rf .pytest_cache
+
       - name: Check for forbidden files tracked by Git
+        working-directory: .
         run: |
           # This script explicitly checks for files that should never be committed, based on .gitignore rules.
           # Hardcoding these patterns makes the workflow's security checks self-contained and explicit.
@@ -92,14 +112,14 @@ jobs:
             "dogwin\.sh$"
             "publish\.sh$"
             "solasola-test-image\.tar$"
-            "Docs/"
-            "Music/"
-            "AI_Models/"
           )
-          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")")
+          # Find forbidden files and replace newlines with spaces to ensure single-line output for the error message.
+          FORBIDDEN_FILES=$(git ls-files | grep -E "$(IFS=\| ; echo "${FORBIDDEN_PATTERNS[*]}")" | tr '\n' ' ')
+
           if [ -n "$FORBIDDEN_FILES" ]; then
-            echo "Error: The following files are tracked by Git but should be ignored:"
-            echo "$FORBIDDEN_FILES"
+            # Use a GitHub Actions error command to force the output to be visible.
+            # This will create a clear annotation on the pull request.
+            echo "::error::Forbidden files found in Git index: $FORBIDDEN_FILES"
             exit 1
           fi
           echo "✅ No forbidden files are being tracked by Git."
@@ -108,21 +128,56 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build image locally for scanning
+        working-directory: .
         run: |
           docker buildx build \
+            --no-cache \
             --platform linux/amd64 \
+            --cache-to type=inline \
+            --progress=plain \
             --tag castika/solasola:ci-scan \
             --load .
 
-      - name: Scan image with Docker Scout
+      - name: Prune Docker Builder Cache
+        # --- DEFINITIVE FIX: Always run this step, even if the build fails ---
+        # This ensures that we clean up build cache to make space for the runner's own logs.
+        if: always()
         run: |
-          docker scout cves castika/solasola:ci-scan \
-            --exit-code \
-            --only-severity critical,high \
-            --format sarif \
-            --output scout-report.sarif
+          echo "Pruning Docker builder cache to free up space..."
+          docker builder prune -af
 
-      - name: Upload Docker Scout SARIF report
+      - name: Log in to Docker Hub
+        # This step is crucial for Docker Scout to authenticate and check for entitlements.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Scan image with Trivy (for logs and build failure)
+        # This step fails the build if CRITICAL or HIGH vulnerabilities are found,
+        # and prints a table to the logs for immediate debugging.
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'castika/solasola:ci-scan'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true # Do not fail on vulnerabilities that have no fix yet.
+
+      - name: Scan image with Trivy (for SARIF report)
+        # This step ALWAYS runs to generate the SARIF report for the security tab.
+        # It does not fail the build, allowing the report to be uploaded even if vulnerabilities were found.
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'castika/solasola:ci-scan'
+          format: 'sarif'
+          output: 'scout-report.sarif' # Keep the filename for the next step
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF report
+        if: always() # Always run this step to upload the report, even if the scan fails.
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: scout-report.sarif

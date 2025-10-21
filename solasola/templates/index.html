@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolaSola - ABC Notation Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='vendor/jszip.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/model_manager.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon.png') }}">
+</head>
+<body>
+    <script>
+        // Immediately apply theme from localStorage to prevent FOUC (Flash of Unstyled Content)
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <div class="container">
+        <header class="header">
+            <h1>SolaSola</h1>
+            <p>Your AI-powered music transcription assistant.</p>
+            <button id="theme-toggle" class="theme-toggle-button" title="Toggle dark mode">
+                <span class="material-symbols-outlined">light_mode</span>
+            </button>
+        </header>
+
+        <!-- Compatibility Warning Placeholder -->
+        <div id="compatibility-warning" class="alert-warning" role="alert" style="display: none;">
+            <!-- Content will be injected by JS -->
+        </div>
+
+        <div id="form-view" class="no-select">
+            <form id="upload-form" method="post" enctype="multipart/form-data">
+                <input type="file" id="music_files" name="music_files" multiple accept=".mp3,.wav,.mid,.zip,.flac,.m4a,.aac" onclick="this.value=null;">
+                <label class="file-upload-area" for="music_files">
+                    <span class="material-symbols-outlined">music_note</span>
+                    <span><strong>Click to upload Music Files</strong> or drag and drop</span>
+                    <small>MP3, WAV, MID, AAC, FLAC, M4A, ZIP</small>
+                    <div class="processing-overlay">
+                        <div class="loader"></div>
+                        <span>Processing files...</span>
+                    </div>
+                    <ul id="music-file-list" class="file-list"></ul>
+                </label>
+
+                <input type="file" id="lyrics_file" name="lyrics_file" accept=".txt" onclick="this.value=null;">
+                <label class="file-upload-area" for="lyrics_file">
+                    <span class="material-symbols-outlined">docs</span>
+                    <span><strong>Click to upload Lyrics File</strong> or drag and drop</span>
+                    <small>TXT</small>
+                    <div class="processing-overlay">
+                        <div class="loader"></div>
+                        <span>Processing file...</span>
+                    </div>
+                    <ul id="lyrics-file-list" class="file-list"></ul>
+                </label>
+
+                <fieldset class="form-section" id="processing-mode-section">
+                    <legend>Processing Mode</legend>
+                    <div class="options-grid">
+                        <label class="radio-option" for="lyrics-only-mode">
+                            <input type="radio" id="lyrics-only-mode" name="mode" value="lyrics_only">
+                            <div class="radio-option-content">
+                                <span class="title">Lyrics File Simple Split</span>
+                                <div class="description" id="lyrics-desc">Splits the lines evenly across the song's duration to create a basic SRT file. No AI is used.</div>
+                            </div>
+                        </label>
+                        <label class="radio-option is-split-card" for="score-mode">
+                            <div class="radio-option-top-row">
+                                <input type="radio" id="score-mode" name="mode" value="abc" checked>
+                                <div class="radio-option-content">
+                                    <span>Full Analysis</span>
+                                    <div class="description" id="score-desc">Generates sheet music for each instrument and provides timed lyrics.</div>
+                                </div>
+                            </div>
+                            <div class="radio-option-bottom-row" id="demucs-slider-section">
+                                <div class="slider-section">
+                                    <div class="slider-wrapper">
+                                        <div class="slider-labels">
+                                            <span id="demucs-label-0" class="quality-label">
+                                                <span class="full-text">Fast</span><span class="short-text">Fast</span>
+                                            </span>
+                                            <span id="demucs-label-1" class="quality-label">
+                                                <span class="full-text">Fast6</span><span class="short-text">Fast6</span>
+                                            </span>
+                                            <span id="demucs-label-2" class="quality-label">
+                                                <span class="full-text">Deep</span><span class="short-text">Deep</span>
+                                            </span>
+                                        </div>
+                                        <div class="slider-container">
+                                            <input type="range" min="0" max="2" value="0" class="quality-slider" id="demucs-quality-slider">
+                                            <div class="slider-tooltip" id="demucs-tooltip">
+                                                <div class="tooltip-arrow"></div>
+                                                <div id="demucs-desc"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slider-description" id="demucs-selected-description"></div>
+                                    <input type="hidden" name="demucs_model" id="demucs_model_hidden" value="htdemucs">
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div id="verifying-indicator" class="verifying-indicator" style="display: none;">
+                    <div class="loader-small"></div>
+                    <span id="verifying-text">Checking Files...</span>
+                </div>
+
+                <button id="convert-button" class="primary-button" type="submit" disabled>
+                    <span class="material-symbols-outlined">play_arrow</span>
+                    Start Analysis
+                </button>
+                <button id="force-process-button" class="primary-button" type="button" style="display: none;">
+                    <span class="material-symbols-outlined">warning</span>
+                    Process Anyway
+                </button>
+            </form>
+
+            <div class="privacy-card">
+                <span class="material-symbols-outlined">security</span>
+                <div>
+                    <p><strong>Your Privacy Matters:</strong> SolaSola runs entirely on your computer inside a secure Docker container. Your files are never uploaded to our servers, and we do not collect any of your data. All processing happens locally.</p>
+                </div>
+            </div>
+
+            <div class="copyright-card">
+                <span class="material-symbols-outlined">copyright</span>
+                <div>
+                    <p><strong>Copyright Notice:</strong> Using SolaSola to analyze music does not grant you any rights to the original work. You must respect the rights of the original copyright holder. You are solely responsible for any legal consequences that may arise from distributing or commercially using the results generated by this tool.</p>
+                </div>
+            </div>
+
+
+        </div> <!-- #form-view -->
+
+        <!-- View for showing the processing iframe -->
+        <div id="loading-view" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px 0;">
+            <iframe id="processing-iframe" style="width: 100%; max-width: 1200px; height: 220px; border: none; border-radius: 8px;"></iframe>
+        </div>
+
+        <div id="results-view" style="display: none;" class="no-select">
+            <div id="results-container">
+                <h2>Results</h2>
+                <div class="results-retention-notice">
+                    <span class="material-symbols-outlined">info</span>
+                    <span>These results are stored in your browser session and will be cleared when you close this tab or start a new conversion.</span>
+                </div>
+            </div>
+            <div class="back-button-container">
+                 <button id="reset-button" class="primary-button">Return</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                SolaSola <span
+                    class="version-tag"
+                    data-version="{{ version_info.version }}"
+                    data-build="{{ version_info.build }}"
+                    data-timestamp="{{ version_info.timestamp }}"
+                    data-commit="{{ version_info.commit_hash }}"
+                >{{ version_info.version }} (build {{ version_info.build }})</span>
+            </p>
+            <p class="powered-by"><a href="{{ url_for('licenses_page') }}">Powered by Demucs, Basic Pitch, music21, & Transformers.</a></p>
+            <p class="disclaimer">SolaSola uses state-of-the-art AI modules like Demucs and Basic Pitch. However, AI can make mistakes, and the quality of the results is not guaranteed.</p>
+            <p class="castika-credit">
+                <a href="https://Castika.com" target="_blank" rel="noopener noreferrer">Castika live solutions</a>
+            </p>
+        </footer>
+    </div> <!-- .container -->
+
+    <!-- These templates are used by JS to create result cards -->
+    <template id="song-info-template">
+        <div class="song-result-card">
+            <div class="result-card-header">
+                <h3 class="song-title info-card-title"></h3>
+            </div>
+            <div class="result-item song-profile" style="display: none;">
+                <button class="copy-btn" title="Copy Profile"><span class="material-symbols-outlined">content_copy</span></button>
+                <div class="profile-pills"></div>
+            </div>
+            <div class="profile-card-footer">
+                <p class="not-analyzed-note">
+                    <strong>Regarding "Not Analyzed"</strong>: This means either the AI analysis model is not installed, or the AI was unable to perform the analysis.
+                    <br><br>
+                    <strong>Regarding Genre Analysis</strong>: If the AI genre model is installed, it will analyze the genre of this music. However, due to the limitations of AI training data, the estimation may not be perfectly accurate. The AI displays the top 3 genres with the highest probability, but if the probability is low, this result has low confidence.
+                </p>
+            </div>
+        </div>
+    </template>
+
+    <template id="score-card-template">
+        <div class="song-result-card">
+            <div class="result-card-header">
+                <h3 class="song-title"></h3>
+                <button class="copy-all-btn" title="Copy All Scores"><span class="material-symbols-outlined">library_books</span></button>
+            </div>
+            <div class="result-item abc-result">
+                <div class="tab-header-container">
+                    <div class="tab-nav-wrapper">
+                        <div class="tab-nav">
+                            <!-- Instrument tabs will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="0" class="quality-slider">
+                        <div class="slider-tooltip score-tooltip">
+                            <div class="tooltip-arrow"></div>
+                            <div class="score-tooltip-desc"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="textarea-container">
+                    <textarea class="result-output" readonly rows="12"></textarea>
+                    <button class="view-btn" title="View Full Score"><span class="material-symbols-outlined">zoom_in</span></button>
+                    <button class="copy-btn" title="Copy Score"><span class="material-symbols-outlined">content_copy</span></button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="lyrics-card-template">
+        <div class="song-result-card">
+            <div class="result-card-header">
+            <h3 class="song-title" style="margin-bottom: 1.5rem;"></h3>
+            </div>
+        <div class="result-item srt-result" style="margin-top: -3.5rem;">
+                <div class="lyrics-method-notice" style="display: none;">
+                    <span class="material-symbols-outlined">info</span>
+                    <span>This SRT file was created by evenly distributing the provided text lines over the song's duration. No AI was used.</span>
+                </div>
+                <div class="sync-score-notice" style="display: none;">
+                    <span class="material-symbols-outlined"></span>
+                    <div class="sync-score-text">
+                        <strong></strong>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="textarea-container">
+                    <textarea class="result-output" readonly rows="12"></textarea>
+                    <button class="view-btn" title="View Full SRT"><span class="material-symbols-outlined">zoom_in</span></button>
+                    <button class="copy-btn" title="Copy SRT"><span class="material-symbols-outlined">content_copy</span></button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- NEW: Template for Chord Chart Card -->
+    <template id="chord-chart-template">
+        <div class="song-result-card">
+            <div class="result-card-header">
+                <h3 class="song-title">Chord Chart</h3>
+            </div>
+            <div class="result-item chord-result">
+                <div class="tab-header-container">
+                    <div class="tab-nav-wrapper">
+                        <div class="tab-nav">
+                            <!-- Chord tabs will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="textarea-container">
+                    <textarea class="result-output" readonly rows="12"></textarea>
+                    <button class="view-btn" title="View Full Chords"><span class="material-symbols-outlined">zoom_in</span></button>
+                    <button class="copy-btn" title="Copy Chords"><span class="material-symbols-outlined">content_copy</span></button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Text Viewer Modal -->
+    <div id="sola-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="sola-modal-title"></h2>
+                <button id="sola-modal-close-btn" class="modal-close-btn" title="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div id="sola-modal-body" class="modal-body"></div>
+            <div id="sola-modal-footer" class="modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- Notification UI Elements -->
+    <div id="notification-container"></div>
+    <div class="floating-action-buttons">
+        <button id="manage-models-button" class="view-log-button" title="Manage AI Models">
+            <span class="material-symbols-outlined">settings_b_roll</span>
+        </button>        
+        <button id="view-log-button" class="view-log-button" title="View log">
+            <span class="material-symbols-outlined">acute</span>
+        </button>
+
+
+        <div class="fab-position-wrapper">
+            <button id="floating-return-button" class="view-log-button" title="Return to Form" style="position: absolute; top: 0; left: 0;"><span class="material-symbols-outlined">home</span></button>
+            <button id="view-results-button" class="view-log-button" title="View Last Results" style="position: absolute; top: 0; left: 0;"><span class="material-symbols-outlined">analytics</span></button>
+        </div>
+    </div>
+
+    <!-- This is the dedicated overlay for the model manager's consent dialog -->
+    <div id="model-manager-overlay" class="install-overlay" style="display: none;">
+        <!-- Content will be injected by JS -->
+    </div>
+
+    <!--
+        This hidden iframe loads the offline page in the background, ensuring it's in the browser's cache.
+        If the server connection is lost, the browser can then display this cached page instantly.
+    -->
+    <iframe src="/offline" style="display:none;" aria-hidden="true" title="Offline Page Pre-loader"></iframe>
+    <script type="module" src="{{ url_for('static', filename='js/sse_client.js') }}" defer></script>
+    <script type="module" src="{{ url_for('static', filename='js/ui-helpers.js') }}" defer></script>
+    <script type="module" src="{{ url_for('static', filename='js/form-handler.js') }}" defer></script>
+    <script type="module" src="{{ url_for('static', filename='js/model_manager.js') }}" defer></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</body>
+</html>
