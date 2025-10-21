@@ -165,9 +165,14 @@ jobs:
           format: 'sarif'
           output: 'scout-report.sarif' # Keep the filename for the next step
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '1' # Fail the build if vulnerabilities are found.
+          # --- DEFINITIVE FIX: Add console output for immediate debugging ---
+          # This prints a summary table to the logs in addition to the SARIF file,
+          # making it clear why the step failed.
+          trivy-flags: '--format table --skip-version-check'
 
-      - name: Upload Docker Scout SARIF report
+      - name: Upload Trivy SARIF report
+        if: always() # Always run this step to upload the report, even if the scan fails.
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: scout-report.sarif
