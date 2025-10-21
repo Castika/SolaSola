@@ -103,7 +103,6 @@ This method ensures that all your data, like downloaded AI models and analysis r
 -   **RAM (Allocated to Docker)**: Minimum 4GB, **8GB+ recommended**.
 -   **CPU**: 2 cores or more (4+ cores recommended).
 -   **Storage**: Minimum 15GB of free space for the Docker image and AI models.
--   **GPU (Optional)**: An NVIDIA GPU with CUDA support will significantly speed up AI processing. The application will automatically use the CPU if a compatible GPU is not found.
 
 ---
 
@@ -194,4 +193,3 @@ Docker Desktop이 설치되어 있지 않다면, 운영체제에 맞게 다운�
 -   **RAM (Docker 할당 기준)**: 최소 4GB, **8GB+ 권장**.
 -   **CPU**: 2코어 이상 (4+ 코어 권장).
 -   **저장 공간**: Docker 이미지 및 AI 모델을 위해 최소 15GB의 여유 공간.
--   **GPU (선택 사항)**: NVIDIA GPU (CUDA 지원)가 있으면 AI 처리 속도가 크게 향상됩니다. 호환되는 GPU가 없으면 애플리케이션은 자동으로 CPU를 사용합니다.

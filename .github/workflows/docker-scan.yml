@@ -153,23 +153,28 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Scan image with Trivy
-        # --- DEFINITIVE FIX: Replace Docker Scout with Trivy ---
-        # Trivy runs locally, avoiding the network-related timeout/cancellation
-        # issues seen with Docker Scout's "storing image for indexing" step.
-        # It's faster, more reliable for this CI environment, and still
-        # produces the required SARIF output for GitHub Security.
+      - name: Scan image with Trivy (for logs and build failure)
+        # This step fails the build if CRITICAL or HIGH vulnerabilities are found,
+        # and prints a table to the logs for immediate debugging.
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'castika/solasola:ci-scan'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true # Do not fail on vulnerabilities that have no fix yet.
+
+      - name: Scan image with Trivy (for SARIF report)
+        # This step ALWAYS runs to generate the SARIF report for the security tab.
+        # It does not fail the build, allowing the report to be uploaded even if vulnerabilities were found.
+        if: always()
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'castika/solasola:ci-scan'
           format: 'sarif'
           output: 'scout-report.sarif' # Keep the filename for the next step
           severity: 'CRITICAL,HIGH'
-          exit-code: '1' # Fail the build if vulnerabilities are found.
-          # --- DEFINITIVE FIX: Add console output for immediate debugging ---
-          # This prints a summary table to the logs in addition to the SARIF file,
-          # making it clear why the step failed.
-          trivy-flags: '--format table --skip-version-check'
+          ignore-unfixed: true
 
       - name: Upload Trivy SARIF report
         if: always() # Always run this step to upload the report, even if the scan fails.

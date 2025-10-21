@@ -263,12 +263,17 @@ def install_model_wrapper(task_id, repo_id, ui_container_id, sse_manager, client
             # Use 'target' for concise toast and detailed log.
             log_to_ui(task_id, "Installation failed. Cleaning up...", "delete", 'error', target='toast')
             log_to_ui(task_id, f"Installation failed for '{repo_id}'. Attempting to clean up partial files.", "delete", 'error', target='log')
-        error_message = f"An error occurred: {e}"
+        
+        # --- DEFINITIVE FIX: Provide a user-friendly error message ---
+        # The full error 'e' contains a long stack trace. We provide a simpler message
+        # to the UI and log the full details to the server console for debugging.
+        user_friendly_error = str(e).splitlines()[0] if str(e) else "An unknown error occurred."
+        error_message = f"An error occurred: {user_friendly_error}"
         update_status(task_id, TASKS[task_id]['progress'], error_message, status='failed')
         sse_manager.broadcast({
             "action": "status_update",
             "payload": {
-                "actor_client_id": client_id, "task_id": task_id, "repo_id": repo_id, "status": "failed", "message": str(e),
+                "actor_client_id": client_id, "task_id": task_id, "repo_id": repo_id, "status": "failed", "message": user_friendly_error,
                 "manifest_id": "", "ui_container_id": ui_container_id, "deletion_path": "", "progress": TASKS[task_id]['progress']
             }
         })
