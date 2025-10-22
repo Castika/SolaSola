@@ -212,6 +212,19 @@ function initializeApp() {
 		}
 	}
 
+	// --- DEFINITIVE FIX: Use 'pageshow' for robust session restoration ---
+	// The 'pageshow' event fires on initial load AND when the page is restored
+	// from the browser's back-forward cache (bfcache). This ensures that if a user
+	// navigates away during processing and then returns, the application state
+	// is correctly restored. The `event.persisted` property is true only for
+	// bfcache restorations.
+	window.addEventListener('pageshow', function(event) {
+		console.log(`Page show event: persisted=${event.persisted}`);
+		// Always run startup checks to ensure the UI is in the correct state,
+		// especially after bfcache restoration.
+		_runStartupChecks();
+	});
+
 	function _runStartupChecks() {
 		function restoreSessionState() {
 			const activeTaskId = sessionStorage.getItem('activeTaskId');
@@ -402,12 +415,9 @@ function initializeApp() {
 
 	initializeBaseUI();
 	initializeFormHandlers();
-	_setupEventListeners();
+	_setupEventListeners(); // Keep this here for initial setup
 	sseClient.connect(); // Connect to SSE for real-time updates
-	_runStartupChecks(); // Perform health checks and restore session
 }
 
-// Use DOMContentLoaded for faster initialization.
-// This event fires as soon as the DOM is ready, without waiting for all external
-// resources like images and stylesheets to be fully loaded.
+
 document.addEventListener('DOMContentLoaded', initializeApp);

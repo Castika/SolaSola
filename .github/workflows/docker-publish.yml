@@ -43,15 +43,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Read version from JSON and remove 'v' prefix
+        id: version
+        run: |
+          VERSION=$(jq -r .version solasola/version.json)
+          echo "VERSION_TAG=${VERSION#v}" >> $GITHUB_OUTPUT
+
       - name: Extract version and set Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: castika/solasola
           tags: |
-            # --- DEFINITIVE FIX: Use 'semver' type to correctly parse version tags like 'v0.1.0.21' ---
-            # This correctly handles the 'v' prefix from the version.json file.
-            type=semver,pattern={{json:solasola/version.json:version}}
+            type=raw,value=${{ steps.version.outputs.VERSION_TAG }}
             type=raw,value=latest
 
       - name: Build and push Docker image
