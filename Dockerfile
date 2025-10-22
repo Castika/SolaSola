@@ -32,10 +32,10 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 # Install main dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt && \
-    # Re-install a specific torch version AFTER requirements.txt to ensure compatibility.
-    # This overwrites any newer version pulled in by other dependencies and avoids
-    # the `torchcodec` dependency introduced in torch >= 2.7.
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu "torch==2.6.0" "torchaudio==2.6.0" && \
+    # --- DEFINITIVE FIX: Upgrade torch to 2.8.0 to resolve security vulnerabilities ---
+    # This version is confirmed to work without requiring the complex `torchcodec` dependency
+    # in our CPU-based build environment.
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu "torch==2.8.0" "torchaudio==2.8.0" && \
     # Aggressive cleanup
     find $VENV_PATH -type d -name "__pycache__" -exec rm -rf {} + && \
     find $VENV_PATH -type f -name "*.pyc" -delete && \

@@ -12,15 +12,19 @@ on:
   pull_request:
     branches: [ "main" ]
     # --- OPTIMIZATION: Run this workflow ONLY when relevant files are changed ---
-    # This prevents the long validation process from running on simple changes
-    # to documentation (like README.md) or other non-code files.
+    # This is a "whitelist" approach. The workflow will ONLY run if files matching
+    # these patterns are changed. This prevents unnecessary builds for changes to
+    # documentation (e.g., README.md) or local configurations (e.g., .gitignore).
     paths:
+      - '.github/workflows/**'
       - 'solasola/**'
       - 'tests/**'
-      - 'pyproject.toml'
-      - 'poetry.lock'
+      - '.dockerignore'
+      - '.flake8'
       - 'Dockerfile'
-      - '.github/workflows/**'
+      - 'config.yaml'
+      - 'poetry.lock'
+      - 'pyproject.toml'
 
 permissions:
   contents: read          # To check out the repository's code.
