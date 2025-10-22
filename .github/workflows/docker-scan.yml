@@ -20,7 +20,7 @@ on:
       - 'pyproject.toml'
       - 'poetry.lock'
       - 'Dockerfile'
-      - '.github/workflows/docker-scan.yml'
+      - '.github/workflows/**'
 
 permissions:
   contents: read          # To check out the repository's code.

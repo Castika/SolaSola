@@ -49,7 +49,9 @@ jobs:
         with:
           images: castika/solasola
           tags: |
-            type=raw,value={{json:solasola/version.json:version}}
+            # --- DEFINITIVE FIX: Use 'semver' type to correctly parse version tags like 'v0.1.0.21' ---
+            # This correctly handles the 'v' prefix from the version.json file.
+            type=semver,pattern={{json:solasola/version.json:version}}
             type=raw,value=latest
 
       - name: Build and push Docker image

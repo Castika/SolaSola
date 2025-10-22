@@ -52,7 +52,7 @@ This method ensures that all your data, like downloaded AI models and analysis r
     ```yaml
     services:
       solasola:
-        # This will pull the pre-built image from Docker Hub.
+        # Pull the pre-built image from Docker Hub. ㄴ
         image: castika/solasola:latest
         container_name: solasola_web
         restart: unless-stopped
@@ -61,14 +61,14 @@ This method ensures that all your data, like downloaded AI models and analysis r
         volumes:
           # These paths are relative to this docker-compose.yml file.
           # Docker will automatically create 'Music' and 'AI_Models' folders
-          # in the same directory where you run 'docker compose up'.
+          # in the same directory where the user runs 'docker compose up'.
           - ./Music:/app/output
           - ./AI_Models:/app/user_models
         environment:
-          # Tell Hugging Face, PyTorch, and our app where the persistent model cache is.
+          # Tell Hugging Face and our app where the persistent model cache is.
           - HF_HOME=/app/user_models
-          - TORCH_HOME=/app/user_models/torch
           - HOST_AI_MODELS_DIR=/app/user_models
+          - TORCH_HOME=/app/user_models/torch
           - HOST_MUSIC_DIR=/app/output
         # Always run in production mode for end-users.
         command: python -m solasola.app --no-debug
@@ -90,13 +90,25 @@ This method ensures that all your data, like downloaded AI models and analysis r
 
 #### 4. How to Stop SolaSola
 
--   **Via Terminal:**
-    Navigate to your SolaSola folder in the terminal and run:
-    ```bash
-    docker compose down
-    ```
--   **Via Docker Desktop:**
-    You can also stop the container directly from the Docker Desktop UI.
+You can stop the container from the Docker Desktop UI, or by running `docker compose down` in your terminal from the `SolaSola` folder.
+
+#### 5. How to Update
+
+To update SolaSola to the latest version, please follow the steps below.
+
+> **⚠️ Important: Update `docker-compose.yml` First!**  
+> Before pulling the new image, you **must** update your `docker-compose.yml` file to match the latest version provided in this README. This is crucial as it may contain important fixes (like the model download fix for macOS) and new environment variables.
+
+After updating your `docker-compose.yml`, run the following commands in your terminal from the `SolaSola` folder:
+
+```bash
+# 1. Pull the latest image from Docker Hub
+docker compose pull
+
+# 2. Stop and remove the old container, then start a new one with the new image
+docker compose up -d
+```
+
 
 ### System Requirements
 
@@ -143,27 +155,28 @@ Docker Desktop이 설치되어 있지 않다면, 운영체제에 맞게 다운�
 
 2.  **`docker-compose.yml` 파일 만들기:** `SolaSola` 폴더 안에 `docker-compose.yml`이라는 새 파일을 만들고 아래 내용을 붙여넣으세요.
 
-    ```yaml
+    ```yaml 
     services:
       solasola:
-        # Docker Hub에서 사전 빌드된 이미지를 가져옵니다.
+        # Pull the pre-built image from Docker Hub. ㄴ
         image: castika/solasola:latest
         container_name: solasola_web
         restart: unless-stopped
         ports:
           - "5656:5656"
         volumes:
-          # 이 경로는 docker-compose.yml 파일을 기준으로 합니다.
-          # 'docker compose up'을 실행하면 'Music'과 'AI_Models' 폴더가 자동으로 생성됩니다.
+          # These paths are relative to this docker-compose.yml file.
+          # Docker will automatically create 'Music' and 'AI_Models' folders
+          # in the same directory where the user runs 'docker compose up'.
           - ./Music:/app/output
           - ./AI_Models:/app/user_models
         environment:
-          # Hugging Face, PyTorch, 그리고 앱에 모델 캐시 위치를 알려줍니다.
+          # Tell Hugging Face and our app where the persistent model cache is.
           - HF_HOME=/app/user_models
-          - TORCH_HOME=/app/user_models/torch
           - HOST_AI_MODELS_DIR=/app/user_models
+          - TORCH_HOME=/app/user_models/torch
           - HOST_MUSIC_DIR=/app/output
-        # 최종 사용자를 위해 항상 프로덕션 모드로 실행합니다.
+        # Always run in production mode for end-users.
         command: python -m solasola.app --no-debug
     ```
 
@@ -183,11 +196,24 @@ Docker Desktop이 설치되어 있지 않다면, 운영체제에 맞게 다운�
 
 #### 4. SolaSola 중지 방법
 
--   터미널에서 SolaSola 폴더로 이동한 후 다음 명령어를 실행하세요.
-    ```bash
-    docker compose down
-    ```
--   또는 Docker Desktop 앱에서 직접 컨테이너를 중지할 수 있습니다.
+Docker Desktop 앱에서 직접 컨테이너를 중지하거나, 터미널에서 `SolaSola` 폴더로 이동한 후 `docker compose down` 명령어를 실행하여 중지할 수 있습니다.
+
+#### 5. 업데이트 방법
+
+SolaSola를 최신 버전으로 업데이트하려면 아래 단계를 따르세요.
+
+> **⚠️ 중요: `docker-compose.yml` 파일을 먼저 업데이트하세요!**  
+> 새 이미지를 다운로드하기 전에, 이 README 파일에 있는 최신 `docker-compose.yml` 내용을 복사하여 기존 파일의 내용을 교체해야 합니다. 이 단계는 macOS에서의 모델 다운로드 오류 수정과 같은 중요한 수정 사항을 적용하는 데 필수적입니다.
+
+`docker-compose.yml` 파일을 업데이트한 후, `SolaSola` 폴더의 터미널에서 아래 명령어들을 실행하세요.
+
+```bash
+# 1. Docker Hub에서 최신 이미지를 다운로드합니다.
+docker compose pull
+
+# 2. 이전 컨테이너를 중지/제거하고, 새 이미지로 컨테이너를 다시 시작합니다.
+docker compose up -d
+```
 
 ### 시스템 요구사항
 
