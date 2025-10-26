@@ -1,33 +1,72 @@
+# ==================================
+# Common with .gitignore (Exclude from both Git and Docker)
+# ==================================
+# Python build/cache artifacts
+__pycache__/
+*.pyc
+*$py.class
+
+# Virtual Environments
+.venv/
+env/
+venv/
+
+# Local development scripts
+dog.sh
+check_updates.sh
+solasola-test-image.tar
+
+# Documentation folder
+Docs/
+
+# Developer-only planning documents
+dev_*.md
+
+# User data directories (managed as volumes, not for commit/build)
+Music/
+AI_Models/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary build files
+*.log
+build.log
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / Editor Files
+.vscode/
+
+# Test & Coverage Reports
+.pytest_cache/
+.coverage
+
+# Auto-generated dependency file (Poetry handles this inside the container)
+requirements.txt
+
+# ==================================
+# .dockerignore ONLY
+# (Exclude from Docker image, but keep in Git)
+# ==================================
 # Docker-specific files
 Dockerfile
 docker-compose.yml
 .dockerignore
+
+# Python version file (not needed inside the container)
 .python-version
 
 # Git version control
 .git/
 .gitignore
 
-
-# Local development scripts and environment
-dog.sh
-dogwin.sh
-publish.sh
-solasola-test-image.tar
-
-.venv/
-venv/
-
-# Local build artifacts
-__pycache__/
-*.pyc
-build.log
-
-# Documentation and other non-essential files
+# Documentation files not needed in the image
 README.md
-Docs/
 LICENSE.md
+SECURITY.md
 
-# User data directories that should be volumes, not part of the image
-Music/
-AI_Models/

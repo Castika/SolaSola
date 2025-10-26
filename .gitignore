@@ -1,4 +1,7 @@
-# Byte-compiled / optimized / DLL files
+# ==================================
+# Common with .dockerignore (Exclude from both Git and Docker)
+# ==================================
+# Python build/cache artifacts
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,6 +10,29 @@ __pycache__/
 .venv/
 env/
 venv/
+
+# Local development scripts
+dog.sh
+check_updates.sh
+solasola-test-image.tar
+
+# Documentation folder
+Docs/
+
+# Developer-only planning documents
+dev_*.md
+
+# User data directories (managed as volumes, not for commit/build)
+Music/
+AI_Models/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary build files
+*.log
+build.log
 
 # Distribution / Packaging
 build/
@@ -20,23 +46,5 @@ dist/
 .pytest_cache/
 .coverage
 
-# Local development scripts
-dog.sh
-dogwin.sh
-publish.sh
-solasola-test-image.tar
-
-# OS-generated files
-.DS_Store
-Thumbs.db
-
-# Documentation folder
-Docs/
-
-# Auto-generated files
+# Auto-generated dependency file (Poetry handles this inside the container)
 requirements.txt
-*.log
-
-# User data directories (should be volumes, not committed)
-Music/
-AI_Models/

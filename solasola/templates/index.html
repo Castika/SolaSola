@@ -18,7 +18,6 @@
 </head>
 <body>
     <script>
-        // Immediately apply theme from localStorage to prevent FOUC (Flash of Unstyled Content)
         (function() {
             const theme = localStorage.getItem('theme') || 'dark';
             if (theme === 'dark') {
@@ -35,7 +34,6 @@
             </button>
         </header>
 
-        <!-- Compatibility Warning Placeholder -->
         <div id="compatibility-warning" class="alert-warning" role="alert" style="display: none;">
             <!-- Content will be injected by JS -->
         </div>
@@ -258,7 +256,7 @@
         </div>
     </template>
     
-    <!-- NEW: Template for Chord Chart Card -->
+    <!-- Template for Chord Chart Card -->
     <template id="chord-chart-template">
         <div class="song-result-card">
             <div class="result-card-header">
@@ -298,6 +296,9 @@
     <!-- Notification UI Elements -->
     <div id="notification-container"></div>
     <div class="floating-action-buttons">
+        <button id="results-library-button" class="view-log-button" title="Results Library">
+            <span class="material-symbols-outlined">folder_managed</span>
+        </button>
         <button id="manage-models-button" class="view-log-button" title="Manage AI Models">
             <span class="material-symbols-outlined">settings_b_roll</span>
         </button>        
@@ -318,7 +319,6 @@
     </div>
 
     <!--
-        This hidden iframe loads the offline page in the background, ensuring it's in the browser's cache.
         If the server connection is lost, the browser can then display this cached page instantly.
     -->
     <iframe src="/offline" style="display:none;" aria-hidden="true" title="Offline Page Pre-loader"></iframe>

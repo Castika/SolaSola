@@ -30,6 +30,7 @@ from solasola.task_manager import TASKS, cleanup_old_tasks
 from solasola.processing_logic import process_task_wrapper
 from solasola.installation_manager import install_model_wrapper
 from solasola.xet_manager import xet_manager
+from solasola.results_manager import results_manager_bp
 
 # Load version info from a JSON file at startup.
 VERSION_INFO = {"version": "v0.0.0", "timestamp": "N/A", "commit_hash": "N/A"}
@@ -47,7 +48,7 @@ except (FileNotFoundError, json.JSONDecodeError):
 
 logging.basicConfig(
     # Default to INFO. This will be adjusted based on CLI args when run directly
-    level=logging.INFO,
+    level=logging.INFO, 
     format='%(asctime)s | %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
@@ -61,6 +62,11 @@ app = Flask(__name__, static_folder='static')
 # Initialize the Server-Sent Events manager for real-time client updates.
 sse_manager = SSEManager()
 
+# --- SECURITY: Set a secret key for signing tokens ---
+# This is essential for creating secure, tamper-proof tokens for actions like deletion.
+app.secret_key = os.urandom(24)
+
+app.register_blueprint(results_manager_bp)
 # This log filter removes noisy, non-critical warnings from libraries
 # (e.g., "Tensorflow is not installed") to make the server console log cleaner
 # and easier to debug.
@@ -116,9 +122,8 @@ def test_page():
 
 @app.route('/offline')
 def offline_page():
-    """Renders a page indicating that the server connection is lost."""
-    # This page SHOULD be cached by the browser so it can be displayed when the
-    # server is down.
+    """Renders a page indicating that the server connection is lost.
+    This page is cached by the browser so it can be displayed when the server is down."""
     return render_template('offline.html')
 
 
@@ -127,12 +132,8 @@ def serve_template(filename):
     """Serves a single template file from the templates directory."""
     return send_from_directory('templates', filename)
 
-@app.route('/api/config')
-def get_user_config():
-    """
-    Provides user-defined configuration from a JSON file. This allows users to
-    override default frontend constants without editing source code.
-    """
+@app.route('/api/config') # Provides user-defined configuration from a JSON file.
+def get_user_config(): # This allows users to override default frontend constants without editing source code.
     config_path = Path(app.root_path) / 'user_config.json'
     if config_path.is_file():
         try:
@@ -176,12 +177,11 @@ def health_check():
     # Prevent browsers from caching the health check response to ensure it's always live.
     response = make_response(
         jsonify({'status': status, 'checks': checks}), http_status_code)
-    response.headers['Cache-Control'] = ('no-store, no-cache, '
-                                        'must-revalidate, post-check=0, '
-                                        'pre-check=0, max-age=0')
+    response.headers['Cache-Control'] = ('no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0')
     response.headers['Pragma'] = 'no-cache'
     return response
 # --- SSE Endpoint ---
+
 @app.route('/api/model-status-stream')
 def model_status_stream():
     """Endpoint for clients to subscribe to real-time model status updates."""
@@ -214,7 +214,6 @@ def task_layout(task_id):
 @app.route('/api/refresh_models_status', methods=['POST'])
 def refresh_models_status_route():
     """Clears the model size cache and refetches all statuses."""
-    # A manual refresh from the UI explicitly runs the cleanup process first to ensure consistency.
     try:
         logging.info("  -> [API Refresh] Requesting model state cleanup...")
         subprocess.run([sys.executable, "-m", "solasola.sub_process.global_model_state_watcher", "--action", "cleanup"], check=True, capture_output=True, text=True) # noqa
@@ -222,7 +221,7 @@ def refresh_models_status_route():
     except Exception as e:
         logging.warning(f"  -> Failed to run model state cleanup during manual refresh: {e}")
     try:
-        clear_model_size_cache() # This clears both the repo size and main status caches.
+        clear_model_size_cache()
         status = get_all_models_status()
         return jsonify(status)
     except Exception as e:
@@ -232,10 +231,7 @@ def refresh_models_status_route():
 
 @app.route('/api/manage_model', methods=['POST'])
 def manage_model():
-    """
-    A unified endpoint to handle all model management actions (install, delete).
-    This endpoint implements the "Server-Side Lock & Retry" model for installations.
-    """
+    """A unified endpoint to handle all model management actions (install, delete)."""
     data = request.get_json()
     action = data.get('action')
     client_id = request.headers.get('X-Client-ID')
@@ -308,7 +304,7 @@ def manage_model():
             return jsonify({"status": "waiting", "message": "Another task is in progress. Please try again."})
 
         try:
-            # --- SECURITY FIX: Use only the filename for deletion ---
+            # Use only the filename for deletion to prevent path traversal.
             manifest_filename = Path(deletion_path).name
             success = delete_model_from_manifest(manifest_filename)
             if success:
@@ -341,10 +337,7 @@ def manage_model():
 
 @app.route('/start_processing', methods=['POST'])
 def start_processing():
-    """
-    Handles file uploads, starts the background processing task,
-    and returns a task ID to the client.
-    """
+    """Handles file uploads, starts the background processing task, and returns a task ID."""
     music_files = request.files.getlist('music_files')
     lyrics_file = request.files.get('lyrics_file')
     processing_mode = request.form.get('mode', 'abc')
@@ -431,7 +424,6 @@ def task_status(task_id):
         return jsonify({'status': 'not_found'}), 404
     
 
-    # Send detailed progress information for the dynamic progress bar.
     response = {
         'status': task['status'],
         'progress_details': task.get('progress_details', {}),
@@ -472,8 +464,7 @@ if __name__ == '__main__':
     config = load_config()
     port = config.get('server', {}).get('port', 5656)
 
-    # --- Argument Parsing moved here ---
-    # This ensures arguments are only parsed when the script is run directly.
+    # Parse arguments only when the script is run directly.
     parser = argparse.ArgumentParser(description="Run SolaSola Flask App.")
     parser.add_argument(
         '--no-debug', action='store_true',
@@ -485,6 +476,7 @@ if __name__ == '__main__':
 
     # Store settings in Flask's config for app-wide access
     app.config['KEEP_MODELS_CACHED'] = cli_args.keep_models_cached
+    app.config['BASE_OUTPUT_DIR'] = BASE_OUTPUT_DIR
     debug_mode = not cli_args.no_debug
     log_level = logging.INFO if debug_mode else logging.WARNING
     logging.getLogger().setLevel(log_level)
@@ -492,7 +484,6 @@ if __name__ == '__main__':
     # Suppress Werkzeug's default INFO logs for successful requests for a cleaner console.
     logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
-    # When Flask is in debug mode, its reloader runs the main script twice.
     # This check ensures the startup messages are only printed once by the main process.
     if not debug_mode or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
         # ANSI color codes for better log visibility
@@ -526,7 +517,6 @@ if __name__ == '__main__':
         logging.info(f"  [OK] Output and cache directories are ready.")
     except OSError as e:
         logging.critical(f"  [!!] FATAL: Could not create or access required directories: {e}")
-        # In a real scenario, you might want to exit here.
 
     # Start a background thread to periodically clean up old, completed task data from memory.
     cleanup_thread = threading.Thread(target=cleanup_old_tasks, daemon=True)
@@ -536,8 +526,6 @@ if __name__ == '__main__':
     xet_cleanup_thread = threading.Thread(target=xet_manager.run, daemon=True)
     xet_cleanup_thread.start()
 
-    # Pre-warm the model status cache in a background thread. This prevents the first
-    # user request to the "Manage Models" UI from blocking for a long time.
     def warm_up_cache():
         # Run a model state cleanup once at startup before building the cache.
         try:

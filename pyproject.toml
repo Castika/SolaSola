@@ -4,8 +4,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "solasola"
-version = "0.1.0"
-description = "A user-friendly tool to convert songs (MP3, WAV, MID) into ABC notation. Supports regular music and AI tracks from Suno/Udio. Easy to use with Docker."
+version = "0.1.1.0"
+description = "An AI-powered tool to analyze music files for genre and structure, and extract WAV stems, MIDI, chords, and ABC notation scores."
 packages = [{include = "solasola"}]
 authors = ["castika <castika@castika.com>"]
 readme = "readme.md"
@@ -24,7 +24,9 @@ transformers = ">=4.36.0"
 librosa = ">=0.10.0"
 soundfile = ">=0.12.1"
 setuptools = ">=78.1.1"
-scikit-learn = "==1.5.1"
+scikit-learn = "^1.7.2"
+antlr4-python3-runtime = "^4.13.2"
+omegaconf = ">=2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = ">=7.0.0"

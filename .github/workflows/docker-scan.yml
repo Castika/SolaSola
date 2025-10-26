@@ -11,32 +11,16 @@ name: Validate Pull Request
 on:
   pull_request:
     branches: [ "main" ]
-    # --- OPTIMIZATION: Run this workflow ONLY when relevant files are changed ---
-    # This is a "whitelist" approach. The workflow will ONLY run if files matching
-    # these patterns are changed. This prevents unnecessary builds for changes to
-    # documentation (e.g., README.md) or local configurations (e.g., .gitignore).
-    paths:
-      - '.github/workflows/**'
-      - 'solasola/**'
-      - 'tests/**'
-      - '.dockerignore'
-      - '.flake8'
-      - 'Dockerfile'
-      - 'config.yaml'
-      - 'poetry.lock'
-      - 'pyproject.toml'
-
 permissions:
-  contents: read          # To check out the repository's code.
-  security-events: write  # To upload the SARIF results from Docker Scout to the GitHub Security tab.
-  pull-requests: write    # To post status checks back to the pull request.
+  contents: read # To check out the repository's code.
+  security-events: write # To upload the SARIF results from Docker Scout to the GitHub Security tab.
+  pull-requests: write # To post status checks back to the pull request.
 
 jobs:
   # This is the main validation job.
   validate:
     name: Validate, Build, and Scan
     runs-on: ubuntu-latest
-
     steps:
       - name: Free up disk space (jlumbroso/free-disk-space)
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -49,8 +33,30 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
+
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Check for file changes to determine workflow steps
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            # This filter group includes all files that affect the application's
+            # code, dependencies, or build process.
+            code:
+              - '.github/workflows/**'
+              - 'solasola/**'
+              - 'tests/**'
+              - '.dockerignore'
+              - '.flake8'
+              - 'Dockerfile'
+              - 'config.yaml'
+              - 'poetry.lock'
+              - 'pyproject.toml'
+            # This filter group includes documentation-only files.
+            docs:
+              - '**/*.md'
 
       - name: Set up Python and Poetry
         uses: actions/setup-python@v5
@@ -60,11 +66,13 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
+
       - name: Configure Poetry to use a local virtualenv
         working-directory: .
         run: poetry config virtualenvs.in-project true
       - name: Install dependencies
         working-directory: .
+        if: steps.changes.outputs.code == 'true'
         env:
           TMPDIR: ${{ github.workspace }}/.tmp
           # --- DEFINITIVE FIX: Redirect poetry and pip caches to the large workspace volume ---
@@ -75,18 +83,22 @@ jobs:
           poetry install
 
       - name: Clean up Poetry and pip caches
+        if: steps.changes.outputs.code == 'true'
         run: |
           rm -rf ${{ github.workspace }}/.poetry-cache ${{ github.workspace }}/.pip-cache
       - name: Lint code with flake8
         working-directory: .
+        if: steps.changes.outputs.code == 'true'
         run: poetry run flake8 solasola/
 
       - name: Run tests with pytest
         working-directory: .
+        if: steps.changes.outputs.code == 'true'
         run: poetry run pytest
 
       - name: Clean up test artifacts
         working-directory: .
+        if: steps.changes.outputs.code == 'true'
         run: |
           rm -rf .pytest_cache
 
@@ -115,6 +127,7 @@ jobs:
             "dog\.sh$"
             "dogwin\.sh$"
             "publish\.sh$"
+            "dev_.*\.md$"
             "solasola-test-image\.tar$"
           )
           # Find forbidden files and replace newlines with spaces to ensure single-line output for the error message.
@@ -133,6 +146,7 @@ jobs:
 
       - name: Build image locally for scanning
         working-directory: .
+        if: steps.changes.outputs.code == 'true'
         run: |
           docker buildx build \
             --no-cache \
@@ -160,6 +174,7 @@ jobs:
       - name: Scan image with Trivy (for logs and build failure)
         # This step fails the build if CRITICAL or HIGH vulnerabilities are found,
         # and prints a table to the logs for immediate debugging.
+        if: steps.changes.outputs.code == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'castika/solasola:ci-scan'
@@ -171,7 +186,7 @@ jobs:
       - name: Scan image with Trivy (for SARIF report)
         # This step ALWAYS runs to generate the SARIF report for the security tab.
         # It does not fail the build, allowing the report to be uploaded even if vulnerabilities were found.
-        if: always()
+        if: always() && steps.changes.outputs.code == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'castika/solasola:ci-scan'
@@ -181,7 +196,13 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy SARIF report
-        if: always() # Always run this step to upload the report, even if the scan fails.
+        if: always() && steps.changes.outputs.code == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: scout-report.sarif
+
+      - name: Clean up temporary image
+        # Always run this step to ensure the large image is removed.
+        if: always() && steps.changes.outputs.code == 'true'
+        run: |
+          docker rmi castika/solasola:ci-scan || true
