@@ -188,11 +188,10 @@ def _process_song(task_id, title, files, temp_dir, device, models, mode, base_pr
     audio_analysis_results = {}
 
     # Initialize all potential result variables at the top-level scope.
-    # This ensures they are always defined, even if a processing step is skipped or fails.
+    # This ensures they are always defined, even if a step is skipped or fails.
     user_lyrics_text = None
     parsed_segments = None
 
-    # --- REFACTOR: Use pre-calculated audio_duration passed from the wrapper ---
     # If no music files were provided but lyrics were, use a default duration.
     if audio_duration == 0 and mode == 'lyrics_only' and files.get('lyrics'):
         audio_duration = 210 # Default to 3m 30s
@@ -217,13 +216,12 @@ def _process_song(task_id, title, files, temp_dir, device, models, mode, base_pr
                 else:
                     log_to_ui(task_id, "Mix creation failed.", "warning", type='warning', target='toast')
                     log_to_ui(task_id, "Could not create a temporary mix. Analysis will be based on the first stem only.", "warning", type='warning', target='log')
-
-        update_detailed_status(task_id, 1, 3, 100, "Processing lyrics...") # This line is correct
+        update_detailed_status(task_id, 1, 3, 100, "Processing lyrics...")
         final_srt_content, user_lyrics_text, parsed_segments = process_lyrics(task_id, files, audio_duration)
         check_for_cancellation(task_id)
 
         # Handle lyrics processing failure only if a lyrics file was actually provided.
-        # This prevents showing a "corrupt file" warning when no file was given.
+        # This prevents showing a "corrupt file" warning when no file was given
 
         if files.get('lyrics') and (final_srt_content is None and user_lyrics_text is None and parsed_segments is None):
             log_to_ui(task_id, "Could not process the provided lyrics file. It may be corrupt or unreadable.", "subtitles_off", type='warning')
@@ -252,12 +250,12 @@ def _process_song(task_id, title, files, temp_dir, device, models, mode, base_pr
             stems_instruction = cache_resolver.resolve('stems')
             if stems_instruction['action'] == 'CREATE_NEW':
                 update_detailed_status(task_id, 3, 1, 10, "Preparing separation model...")
-                # process_audio now returns the actual path where stems were saved
+                # process_audio returns the actual path where stems were saved
                 actual_stems_path = process_audio(task_id, files, temp_dir, device, models['demucs'], stems_instruction['path'])
                 if not actual_stems_path or not any(actual_stems_path.iterdir()):
                      raise Exception("Stem separation failed to produce any files.")
-                # Write a manifest for the new stems so they can be cached for future runs.
-                cache_resolver.write_manifest_for_step('stems') # This is now correct
+                # Write a manifest for the new stems so they can be cached for future runs
+                cache_resolver.write_manifest_for_step('stems')
                 stems_instruction['path'] = actual_stems_path # Update path for the next step
             else: # USE_EXISTING
                 actual_stems_path = stems_instruction['path']
@@ -319,7 +317,7 @@ def _process_song(task_id, title, files, temp_dir, device, models, mode, base_pr
             # 1. Use the mixed MIDI for final song profile analysis.
             midi_analysis_results = song_analyzer.analyze_midi_features(mix_midi_path)
 
-            # 2. Use the SAME mixed MIDI to generate the "Mix" ABC score.
+            # 2. Use the same mixed MIDI to generate the "Mix" ABC score.
             if final_abc_files is not None: # Ensure individual ABCs were created
                 mix_abc_content = generate_mix_abc(mix_midi_path, title)
                 if mix_abc_content:
@@ -419,7 +417,6 @@ def _process_song(task_id, title, files, temp_dir, device, models, mode, base_pr
 def process_task_wrapper(task_id, temp_dir, classified_files, processing_mode, demucs_model, original_music_filenames, display_title_override=None, keep_models_cached=False, base_output_dir=None, raw_form_data=None, version_info=None):
     """The main processing logic that runs in a background thread."""
     start_time = time.time()
-
     try:
         if raw_form_data:
             print("\n--- Raw Request Received ---")
@@ -505,16 +502,22 @@ def process_task_wrapper(task_id, temp_dir, classified_files, processing_mode, d
                     i += 1
                 final_results_dir.mkdir(parents=True, exist_ok=True)
 
-                TASKS[task_id]['input_files'] = files
+                # Create a marker file to indicate processing is in progress
+                processing_marker_path = final_results_dir / "on_processing.json"
+                try:
+                    with open(processing_marker_path, 'w') as f:
+                        json.dump({'task_id': task_id, 'start_time': time.time()}, f)
+                except Exception as e:
+                    logging.error(f"Failed to create processing marker file: {e}")
 
+                TASKS[task_id]['input_files'] = files
 
                 # Send a concise message to the toast.
                 log_to_ui(task_id, "Results will be saved to...", "folder_open", type='success', target='toast')
-                # Send a more detailed message to the log.
                 log_to_ui(task_id, f"Result folder: '{result_dir_name}'", "folder_open", type='info', target='log')
 
                 cache_resolver = CacheResolver(task_id, base_output_dir, fingerprint, final_results_dir)
-                metadata_generator = MetadataGenerator(task_id, version_info, final_results_dir, client_time_offset_seconds)
+                metadata_generator = MetadataGenerator(task_id, version_info, final_results_dir, local_time)
                 
                 settings_info = {
                     "mode": mode_label,
@@ -582,6 +585,10 @@ def process_task_wrapper(task_id, temp_dir, classified_files, processing_mode, d
             else:
                 log_to_ui(task_id, "Keeping models in memory.", "memory", type='info', target='toast')
                 log_to_ui(task_id, "Keeping AI models in memory for faster subsequent processing.", "memory", type='info', target='log')
+
+        # Remove the processing marker file
+        if 'processing_marker_path' in locals() and processing_marker_path.exists():
+            processing_marker_path.unlink(missing_ok=True)
 
 def process_lyrics(task_id, files, audio_duration=0):
     """
@@ -665,9 +672,7 @@ def process_audio(task_id, files, temp_dir, device, model_name, stems_output_dir
             if demucs_proc:
                 TASKS[task_id]['process'] = demucs_proc
 
-                # --- FINAL FIX: Use a non-blocking thread to read stdout in real-time ---
-                # This avoids the deadlock caused by reading a blocking pipe in the main thread
-                # while also allowing for real-time progress updates.
+                # Use a non-blocking thread to read stdout in real-time to avoid deadlocks
                 output_lines = []
                 def pipe_reader(pipe, line_list):
                     try:
@@ -685,8 +690,7 @@ def process_audio(task_id, files, temp_dir, device, model_name, stems_output_dir
                 processed_line_count = 0
                 while demucs_proc.poll() is None:
                     # Process lines as they become available
-                    # --- DEFINITIVE FIX: Do not consume the log lines. Iterate over a copy. ---
-                    # This preserves the full log for error reporting if the process fails.
+                    # Iterate over a copy to preserve the full log for error reporting
                     for i in range(processed_line_count, len(output_lines)):
                         line = output_lines[i]
                         progress_update = progress_parser.parse_line(line)

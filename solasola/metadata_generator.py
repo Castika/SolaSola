@@ -31,11 +31,8 @@ class MetadataGenerator:
     Collects all processing information for a task and generates the final
     `info.json` and `info.txt` files that are saved in the result directory.
     """
-    def __init__(self, task_id: str, version_info: dict, result_dir: Path, client_time_offset: int = 0):
+    def __init__(self, task_id: str, version_info: dict, result_dir: Path, local_timestamp: datetime):
         self.result_dir = result_dir
-        # Use the client's time offset to generate a timestamp in their local timezone.
-        offset = timedelta(seconds=client_time_offset)
-        timestamp_local = datetime.fromtimestamp(time.time() + client_time_offset, tz=timezone(offset))
         
         # Combine version and build number into a single, user-friendly string.
         version_str = version_info.get('version', 'N/A')
@@ -46,7 +43,7 @@ class MetadataGenerator:
             "project_info": {
                 "sola_sola_version": full_version_str,
                 "processing_id": task_id,
-                "processing_timestamp_local": timestamp_local.isoformat(),
+                "processing_timestamp_local": local_timestamp.isoformat(),
                 "processing_duration": "N/A",
             },
             "input_info": {},

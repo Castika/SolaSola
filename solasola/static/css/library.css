@@ -1,0 +1,267 @@
+/* Styles for the Results Library modal (library.html) */
+
+body {
+    /* Use the base background color for the iframe body */
+    background-color: var(--container-background);
+    color: var(--text-color);
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-family);
+}
+
+.library-container {
+    padding: 0; /* Remove padding to prevent double-padding inside the modal body */
+    height: 100%; /* Ensure the container fills the parent iframe, not the whole viewport */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.library-header {
+    flex-shrink: 0; /* Prevent header from shrinking */
+    padding: 0;
+    border: none;
+}
+
+.results-list-container {
+    flex-grow: 1; /* This container should grow and scroll internally */
+    overflow-y: auto;
+    /* Add custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--subtle-text-color) var(--subtle-bg-color);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+/* Apply the subtle background to both the main row and its detail row when expanded. */
+.result-item.expanded,
+.detail-view {
+    background-color: var(--subtle-bg-color);
+}
+
+/* On hover, apply the same background color to ensure consistency. */
+.result-item:hover,
+.result-item.expanded:hover {
+    background-color: var(--subtle-bg-color);
+}
+
+.info-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.1rem; /* Reduce space between title and date */
+    min-width: 0; /* Allow shrinking */
+}
+
+.sub-info-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Allow items to wrap on small screens */
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Mode Badges: Sky Blue Theme (Fixed Color) */
+.badge-deep, .badge-fast, .badge-fast6 { color: #3B82F6; border-color: #3B82F6; background-color: #EFF6FF; }
+/* Device Badges: Yellow Theme (Fixed Color) */
+.badge-gpu, .badge-cpu { color: #D97706; border-color: #FDE68A; background-color: #FFFBEB; }
+/* Lyrics Badge: Orange Theme (Fixed Color) */
+.badge-lyrics { color: #F97316; border-color: #FB923C; background-color: #FFF7ED; } /* orange-500, orange-400, orange-50 */
+
+
+.title-text {
+    display: block; /* Make it a block to allow truncation */
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.date-text {
+    display: block; /* Make it a block */
+    color: var(--subtle-text-color);
+    font-size: 0.85rem;
+}
+
+.date-text.missing-files-error,
+.folder-stats-text.error-text {
+    color: var(--error-color-bright);
+    font-weight: 500;
+}
+
+.processing-text {
+    color: var(--primary-color);
+    font-weight: 500;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.folder-stats-text {
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    opacity: 0.8;
+}
+
+.actions-cell {
+    flex-shrink: 0; /* Prevent action buttons from shrinking */
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding-left: 1rem; /* Add space between info and actions */
+}
+
+/* Style for rows where info.json was missing or corrupt */
+.result-item.degraded {
+    opacity: 0.7;
+}
+
+/* Animation for row deletion */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: scaleY(0.8); }
+}
+
+tr.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Styles for the expandable detail row */
+.detail-view {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-content {
+    padding: 1.5rem; /* Restore original padding */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-section h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.75rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-item .key {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.detail-item .value {
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
+}
+
+/* Style for degraded/report view */
+.report-text-view {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.85rem;
+    padding: 1rem;
+}
+
+/* Footer Styles */
+.library-footer {
+    flex-shrink: 0; /* Prevent footer from shrinking */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.library-footer .path-notice {
+    font-size: 0.85rem;
+    color: var(--error-color);
+}
+
+/* Center the loader and remove text */
+.loader-content {
+    flex-grow: 1; /* Allow the loader to take up space to center itself */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+/* Generic icon button style for use in the table */
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--subtle-text-color);
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.icon-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background-color: transparent !important; /* Ensure no hover effect */
+    color: var(--subtle-text-color) !important; /* Reset color */
+}
+
+.icon-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.icon-btn .material-symbols-outlined {
+    font-size: 1.25rem;
+}
+
+/* Style for the delete button when it's in confirmation state */
+.icon-btn.confirm-delete {
+    color: var(--error-color);
+    background-color: var(--error-bg-subtle);
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}

@@ -1,4 +1,4 @@
-import { initializeBaseUI, showNotification, clearNotificationLog, clearAllToasts, getAudioDurations, getCookie, deleteCookie, truncateFilename } from './ui-helpers.js';
+import { initializeBaseUI, showNotification, clearNotificationLog, clearAllToasts, getAudioDurations, getCookie, deleteCookie, truncateFilename, showModal } from './ui-helpers.js';
 import { renderResults } from './results.js';
 import { openModelManager } from './model_manager.js';
 import { initializeFormHandlers, fileStore, renderAllFileLists } from './form-handler.js';
@@ -43,7 +43,7 @@ function initializeApp() {
 	const viewResultsButton = document.getElementById('view-results-button');
 	const floatingReturnButton = document.getElementById('floating-return-button');
 	const manageModelsBtn = document.getElementById('manage-models-button');
-
+	const resultsLibraryBtn = document.getElementById('results-library-button');
 
 	let displayedLogCount = parseInt(sessionStorage.getItem('displayedLogCount') || '0', 10);
 	
@@ -118,13 +118,11 @@ function initializeApp() {
 	}
 
 	function displayNewLogs(data) {
-
 		if (!data || !data.ui_logs) return;
 
 		if (data.ui_logs.length > displayedLogCount) {
 			const newLogs = data.ui_logs.slice(displayedLogCount);
 			newLogs.forEach(originalLogObject => {
-				// --- FIX: Pass the entire original log object to preserve the 'target' property ---
 				showNotification(originalLogObject);
 			});
 			displayedLogCount = data.ui_logs.length;
@@ -154,6 +152,33 @@ function initializeApp() {
 		}
 	}
 
+	function openResultsLibrary() {
+        const iframe = document.createElement('iframe');
+        iframe.src = '/library';
+
+        const refreshAction = () => {
+            if (iframe.contentWindow && typeof iframe.contentWindow.loadResults === 'function') {
+                iframe.contentWindow.loadResults();
+            }
+        };
+
+        showModal({
+            title: 'Results Library',
+            bodyContent: iframe,
+            footerButtons: [
+                { type: 'text', label: 'Your analysis results are saved in the SolaSola/Music folder.', align: 'center' },
+                { label: 'Refresh', icon: 'refresh', action: refreshAction, isWarning: true },
+                { label: 'Close', icon: 'close', action: 'close', isPrimary: true }
+            ],
+            onOpen: (modalElements) => {
+                // Make the iframe fill the modal body completely.
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+            }
+        });
+    }
+
 	function _setupEventListeners() {
 		// Listen for messages from the iframe (e.g., when processing is done)
 		window.addEventListener('message', (event) => {
@@ -165,7 +190,6 @@ function initializeApp() {
 			const { status, results, type, logs } = event.data;
 	
 			if (type === 'log_update' && logs) {
-
 				displayNewLogs({ ui_logs: logs });
 				return; // This is a log update, not a status change.
 			}
@@ -210,18 +234,14 @@ function initializeApp() {
 		if (manageModelsBtn) {
 			manageModelsBtn.addEventListener('click', openModelManager);
 		}
+		if (resultsLibraryBtn) {
+			resultsLibraryBtn.addEventListener('click', openResultsLibrary);
+		}
 	}
 
-	// --- DEFINITIVE FIX: Use 'pageshow' for robust session restoration ---
-	// The 'pageshow' event fires on initial load AND when the page is restored
-	// from the browser's back-forward cache (bfcache). This ensures that if a user
-	// navigates away during processing and then returns, the application state
-	// is correctly restored. The `event.persisted` property is true only for
-	// bfcache restorations.
+	// Use 'pageshow' for robust session restoration, especially from bfcache.
 	window.addEventListener('pageshow', function(event) {
 		console.log(`Page show event: persisted=${event.persisted}`);
-		// Always run startup checks to ensure the UI is in the correct state,
-		// especially after bfcache restoration.
 		_runStartupChecks();
 	});
 
@@ -258,7 +278,6 @@ function initializeApp() {
 	
 					if (errorMessages.length > 0) {
 						const fullMessage = `Warning: Backend setup is incomplete. ${errorMessages.join(' ')}`;
-
 						showNotification({ message: fullMessage, type: 'error', duration: 3600000 });
 					}
 				}
@@ -376,7 +395,7 @@ function initializeApp() {
 		_handleSubmissionUIStart();
 
 		try { // This will catch errors from validation, submission, and success handling
-			// --- Stage 2: High-Reliability Verification ---
+			// High-Reliability Verification
 			const isForced = uploadForm.dataset.force === 'true';
 			if (isForced) {
 				delete uploadForm.dataset.force;
@@ -395,7 +414,7 @@ function initializeApp() {
 				return; // Stop submission if validation fails
 			}
 
-			// --- Stage 3: Clear old session and submit to server ---
+			// Clear old session and submit to server
 			try {
 				sessionStorage.removeItem('lastResults');
 				sessionStorage.removeItem('processStartTime');

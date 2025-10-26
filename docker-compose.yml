@@ -2,23 +2,21 @@
 
 services:
   solasola:
-    # Pull the pre-built image from Docker Hub. ㄴ
     image: castika/solasola:latest
     container_name: solasola_web
     restart: unless-stopped
     ports:
       - "5656:5656"
     volumes:
-      # These paths are relative to this docker-compose.yml file.
-      # Docker will automatically create 'Music' and 'AI_Models' folders
-      # in the same directory where the user runs 'docker compose up'.
       - ./Music:/app/output
       - ./AI_Models:/app/user_models
+      - cache:/app/cache
     environment:
-      # Tell Hugging Face and our app where the persistent model cache is.
       - HF_HOME=/app/user_models
       - HOST_AI_MODELS_DIR=/app/user_models
       - TORCH_HOME=/app/user_models/torch
       - HOST_MUSIC_DIR=/app/output
-    # Always run in production mode for end-users.
     command: python -m solasola.app --no-debug
+
+volumes:
+  cache:

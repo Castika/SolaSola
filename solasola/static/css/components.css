@@ -108,23 +108,12 @@
 /* --- Notification Toasts & Log --- */
 #notification-container {
     position: fixed;
-    /* The 'bottom' property is now dynamically calculated by JavaScript
-       to position it correctly above the floating action buttons. */
     bottom: 20vh; /* A sensible default fallback */
     right: 1rem;
     z-index: 4000; /* Higher than modal overlay (3000) */
     width: 380px; /* Set a fixed width for toasts. */
     max-width: 90vw; /* Prevent overflow on small screens. */
     transition: bottom 0.3s ease-in-out;
-}
-
-/* When a modal is open, move the toasts up to avoid obscuring the modal footer. */
-body.modal-open #notification-container {
-    bottom: 30vh;
-    /*
-     * Re-asserting the z-index here helps prevent a browser rendering bug where
-     * existing toasts might appear under the modal overlay when it opens.
-     */
 }
 
 .toast {
@@ -324,7 +313,6 @@ body.modal-open #notification-container {
     line-height: 1.5;
 }
 
-/* --- NEW: Responsive Log List for smaller screens --- */
 @media (max-width: 500px) {
     .log-list li {
         flex-direction: column;
@@ -348,7 +336,6 @@ body.modal-open #notification-container {
     color: var(--text-color); /* Default color */
 }
 
-/* Color coding for message types */
 .log-list li.success .log-message { color: var(--success-color-darker); }
 html[data-theme="dark"] .log-list li.success .log-message { color: var(--success-color-dark); }
 
@@ -487,14 +474,12 @@ html[data-theme="dark"] .log-list li.warning .log-message { color: #FBBF24; }
 }
 
 .modal-body pre {
-    /* --- FIX: Use the app's default font and allow wrapping --- */
     font-family: var(--font-family);
     font-size: 0.9rem;
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-all;
 }
-
 .modal-footer {
     display: flex;
     justify-content: space-between;
@@ -507,9 +492,44 @@ html[data-theme="dark"] .log-list li.warning .log-message { color: #FBBF24; }
     gap: 1rem; /* Add space between left and right button groups on narrow screens */
 }
 
+.modal-footer.two-row-layout {
+    flex-direction: column;
+    padding: 0;
+}
+
+.modal-footer.two-row-layout .modal-footer-top {
+    width: 100%;
+    padding: 0.75rem 1.5rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.modal-footer.two-row-layout .modal-footer-bottom {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    margin: 0; /* Remove all margins */
+    border-top: 1px solid var(--border-color);
+    gap: 1rem;
+}
+
 .modal-footer-group {
     display: flex;
     gap: 0.75rem;
+}
+
+.modal-footer-group-center {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.modal-footer-text {
+    font-size: 0.85rem;
+    color: var(--error-color);
+    margin: 0;
+    padding: 0;
 }
 
 .modal-footer-btn {
